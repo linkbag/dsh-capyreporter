@@ -1,0 +1,160 @@
+﻿<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>CapyReporter · DSH Pet</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: transparent;
+        overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+        font-family: system-ui, 'Segoe UI', sans-serif;
+        color-scheme: dark;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      #bubble {
+        position: absolute;
+        /* JS pins this just above the pet image on every size change;
+           the default covers the unscaled 182px pet. */
+        bottom: 190px;
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 90px;
+        max-width: 1000px; /* wide bubble so status text fits without ellipsizing; the window re-fits around it */
+        background: #fdfdf7;
+        color: #22242c;
+        border-radius: 14px;
+        padding: 8px 12px;
+        font-size: 12.5px;
+        line-height: 1.45;
+        box-shadow: 0 4px 14px #0007;
+        display: none;
+        cursor: pointer;
+        z-index: 5;
+        flex-direction: column;
+        gap: 3px;
+        box-sizing: border-box;
+      }
+      #bubble::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 8px solid transparent;
+        border-top-color: #fdfdf7;
+        border-bottom: 0;
+      }
+      .bub-head {
+        font-weight: 600;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        overflow-wrap: break-word;
+      }
+      .bub-detail {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        overflow-wrap: break-word;
+        opacity: 0.85;
+      }
+      .bub-hint {
+        font-size: 10.5px;
+        opacity: 0.55;
+        white-space: nowrap; /* "click to expand · double-click to hide" stays on one line */
+      }
+      .bub-log {
+        display: none;
+        flex-direction: column;
+        gap: 2px;
+        max-height: 150px;
+        overflow-y: auto;
+        font-size: 12px;
+        line-height: 1.4;
+        scrollbar-width: thin;
+      }
+      .bub-log.is-on {
+        display: flex;
+      }
+      .bub-log::-webkit-scrollbar {
+        width: 6px;
+      }
+      .bub-log::-webkit-scrollbar-thumb {
+        background: #00000044;
+        border-radius: 3px;
+      }
+      .bub-line {
+        overflow-wrap: break-word;
+        white-space: normal;
+      }
+      #img {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        height: 182px;
+        width: auto;
+        pointer-events: auto;
+        cursor: grab;
+        filter: drop-shadow(0 6px 16px #0008);
+      }
+      #menu {
+        position: absolute;
+        bottom: 6px;
+        right: 6px;
+        flex-direction: column;
+        background: #23262f;
+        color: #e8eaf0;
+        border: 1px solid #ffffff22;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px #0009;
+        z-index: 9;
+        display: none;
+      }
+      #menu .mi {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: #e8eaf0;
+        padding: 8px 14px;
+        font-size: 12px;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+      }
+      #menu .mi:hover {
+        background: #ffffff14;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="bubble">
+        <span id="bubbleHead" class="bub-head"></span>
+        <span id="bubbleDetail" class="bub-detail"></span>
+        <div id="bubbleLog" class="bub-log"></div>
+        <span id="bubbleHint" class="bub-hint"></span>
+      </div>
+      <img id="img" draggable="false" alt="" />
+      <div id="menu">
+        <button class="mi" id="menuRestore">Restore bubble</button>
+        <button class="mi" id="menuSite">Open DeepSeek Harness</button>
+        <button class="mi" id="menuHide">Hide desktop pet</button>
+      </div>
+    </div>
+    <script src="./renderer.js"></script>
+  </body>
+</html>

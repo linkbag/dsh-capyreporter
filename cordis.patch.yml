@@ -1,0 +1,6 @@
+﻿# dsh-capyreporter bundle patch — mounts the persistent CapyReporter desktop-pet plugin.
+# The host half is lib/index.js (exported as a Cordis plugin); the package.json
+# "dsh.client" declaration makes the browser half available at /plugins/dsh-capyreporter/client.js.
+- insert:
+    - id: capyreporter
+      name: 'dsh-capyreporter'
