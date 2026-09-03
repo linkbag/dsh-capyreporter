@@ -1,4 +1,4 @@
-﻿// dsh-capyreporter desktop helper - Electron main process.
+// dsh-capyreporter desktop helper - Electron main process.
 // One transparent, frameless, always-on-top window showing CapyReporter + a speech bubble.
 // The renderer fetches data from the DSH host over HTTP (/dsh-capyreporter/*) - no stdin IPC.
 //

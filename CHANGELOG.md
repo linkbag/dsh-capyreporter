@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 (2026-09-02)
+
+- **Fix: stripped UTF-8 BOMs** from shipped files — DSH's manifest reader does a plain `JSON.parse` and a BOM'd `package.json` killed `dsh plugin` installs on other machines.
+- Added `scripts/check-bom.mjs` as a **pre-publish guard** (`npm prepack` + CI now fail the build if any package file carries a BOM), so this class of bug can't ship again.
+
 ## 0.1.0 (2026-09-02)
 
 Initial public release.

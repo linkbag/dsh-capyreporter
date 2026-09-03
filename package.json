@@ -1,6 +1,6 @@
-﻿{
+{
   "name": "dsh-capyreporter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CapyReporter — an always-on-top capybara task reporter for the DeepSeek Harness Web UI. A transparent floating pet that narrates each trajectory step in a speech bubble, tells you which project is reporting, alerts you when a task completes while you are away, and lets you upload your own pet art.",
   "keywords": [
     "dsh",
@@ -42,6 +42,10 @@
     "README.zh.md",
     "LICENSE"
   ],
+  "scripts": {
+    "verify": "node scripts/verify.mjs",
+    "prepack": "node scripts/check-bom.mjs"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

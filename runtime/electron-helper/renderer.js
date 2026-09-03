@@ -1,4 +1,4 @@
-﻿// renderer for the always-on-top CapyReporter window. Fetches image + activity from the
+// renderer for the always-on-top CapyReporter window. Fetches image + activity from the
 // DSH host over HTTP; drags to move; left-click opens DSH; right-click shows a menu.
 //
 // Bubble UX: compact by default (headline + latest status line); single click
