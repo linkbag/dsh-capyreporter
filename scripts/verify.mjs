@@ -1,12 +1,13 @@
 // Lightweight smoke check for the CapyReporter bundle. Run: node scripts/verify.mjs
 import { existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const problems = []
 
-const host = await import(join(root, 'lib', 'index.js'))
+// ESM needs a file:// URL on Windows (a plain C:\ path throws ERR_UNSUPPORTED_ESM_URL_SCHEME)
+const host = await import(pathToFileURL(join(root, 'lib', 'index.js')).href)
 if (typeof host.apply !== 'function' || !Array.isArray(host.inject) || typeof host.name !== 'string') {
   problems.push('lib/index.js does not export the Cordis plugin contract {apply, inject, name}')
 }
