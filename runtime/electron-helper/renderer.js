@@ -202,10 +202,14 @@
     hideBubble();
   });
 
-  // drag
+  // drag — pointer capture keeps the move stream alive even when the cursor
+  // outruns the small window, and we hold the window interactive for the whole
+  // drag (a mouseleave during a fast drag would otherwise flip it click-through
+  // mid-drag and drop the trail).
   let drag = null;
   img.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
+    try { img.setPointerCapture(e.pointerId); } catch (err) {}
     drag = { sx: e.screenX, sy: e.screenY, wx: window.screenX, wy: window.screenY };
     window.petBridge.setInteractive(true);
     e.preventDefault();
@@ -213,13 +217,19 @@
   window.addEventListener('pointermove', (e) => {
     if (drag) window.petBridge.move(drag.wx + (e.screenX - drag.sx), drag.wy + (e.screenY - drag.sy));
   });
-  window.addEventListener('pointerup', () => {
+  const endDrag = () => {
+    if (!drag) return;
     drag = null;
-  });
+    window.petBridge.setInteractive(true); // pointer is still over the pet when a drag ends
+  };
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
 
-  // hover -> interactive (so clicks work); leave -> click-through
+  // hover -> interactive (so clicks work); leave -> click-through (never mid-drag)
   root.addEventListener('mouseenter', () => window.petBridge.setInteractive(true));
-  root.addEventListener('mouseleave', () => window.petBridge.setInteractive(false));
+  root.addEventListener('mouseleave', () => {
+    if (!drag) window.petBridge.setInteractive(false);
+  });
 
   // left-click (not a drag) -> open DSH in default browser
   img.addEventListener('click', () => window.petBridge.openSite(base));
