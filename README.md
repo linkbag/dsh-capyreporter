@@ -1,5 +1,7 @@
 # 🐾 CapyReporter — the capybara that reports for you
 
+English | [简体中文](README.zh.md)
+
 **An always-on-top capybara task reporter for the DeepSeek Harness Web UI.**
 
 CapyReporter is a tiny transparent window that floats above **every** app and tab of your desktop — not just inside the page — and quietly narrates what your deepseek harness agent is doing, one step at a time, so you can focus on your other work and never miss the moment a task finishes.
