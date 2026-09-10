@@ -110,6 +110,10 @@ app.whenReady().then(() => {
     const ch = Math.round(Number(size && size.h) || 0);
     if (cw < 80 || ch < 80 || cw > 4000 || ch > 4000) return;
     const b = w.getBounds();
+    // Same size → nothing to do. Re-issuing setBounds with identical values is
+    // not a no-op under fractional display scaling: every DIP↔physical round
+    // trip can round the position a pixel further (the "pet sinks" bug).
+    if (b.width === cw && b.height === ch) return;
     const area = screen.getPrimaryDisplay().workArea;
     const width = Math.min(cw, area.width);
     const height = Math.min(ch, area.height);

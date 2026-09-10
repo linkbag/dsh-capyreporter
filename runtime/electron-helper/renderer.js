@@ -57,6 +57,10 @@
   // can report a fuller status (expanded step log) without the window blowing up.
   const BASE_IMG_H = 182;
   let scale = 1;
+  // Only resize when the size actually changed: re-issuing an identical resize
+  // every tick makes Windows' fractional-DPI bounds round-trip walk the window
+  // down the screen a pixel at a time.
+  const lastFit = { w: 0, h: 0 };
   function refit() {
     const imgH = Math.round(BASE_IMG_H * scale);
     img.style.height = imgH + 'px';
@@ -71,7 +75,12 @@
       w = Math.max(w, bw);
       h = Math.max(h, imgH + 12 + bh);
     }
-    window.petBridge.resize({ w: Math.round(w), h: Math.round(h) });
+    w = Math.round(w);
+    h = Math.round(h);
+    if (w === lastFit.w && h === lastFit.h) return;
+    lastFit.w = w;
+    lastFit.h = h;
+    window.petBridge.resize({ w: w, h: h });
   }
   img.addEventListener('load', () => refit());
   window.addEventListener('wheel', (e) => {
