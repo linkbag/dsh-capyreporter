@@ -42,7 +42,7 @@ dsh plugin --profile web add dsh-capyreporter
 | 在水豚上滚轮 | 缩放 |
 | 单击气泡 | 展开 / 收起步骤日志 |
 | 双击气泡 | 先藏起来，有新动静再冒出来 |
-| 左键点水豚 | 回到 DeepSeek Harness |
+| 双击水豚 | 回到 DeepSeek Harness（单击不做事，太容易误触了） |
 | 右键水豚 | 菜单：恢复气泡 · 打开 DSH · 隐藏桌面宠物 |
 
 ## 已知限制

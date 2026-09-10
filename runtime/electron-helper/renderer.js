@@ -1,5 +1,5 @@
 // renderer for the always-on-top CapyReporter window. Fetches image + activity from the
-// DSH host over HTTP; drags to move; left-click opens DSH; right-click shows a menu.
+// DSH host over HTTP; drags to move; double-click opens DSH; right-click shows a menu.
 //
 // Bubble UX: compact by default (headline + latest status line); single click
 // expands into a scrollable step log; double click dismisses; the right-click
@@ -245,8 +245,9 @@
     if (!drag) window.petBridge.setInteractive(false);
   });
 
-  // left-click (not a drag) -> open DSH in default browser
-  img.addEventListener('click', () => window.petBridge.openSite(base));
+  // double-click (not a drag) -> return to DeepSeek Harness. A single click must
+  // stay inert: it fires on every stray click and on drags that barely move.
+  img.addEventListener('dblclick', () => window.petBridge.openSite(base));
 
   // right-click menu
   img.addEventListener('contextmenu', (e) => {

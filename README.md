@@ -45,7 +45,7 @@ Restart `dsh web` (or just refresh the page). Requires DSH web 0.1.0-rc.6 or new
 | Mouse wheel over her | Resize |
 | Single click the bubble | Expand / collapse the step log |
 | Double-click the bubble | Dismiss until the next update |
-| Left-click the capybara | Return to DeepSeek Harness |
+| Double-click the capybara | Return to DeepSeek Harness (single click does nothing — it fires too easily) |
 | Right-click the capybara | Menu: Restore bubble · Open DSH · Hide desktop pet |
 
 ## 🎨 Art & licensing

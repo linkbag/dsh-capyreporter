@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5 (2026-09-10)
+
+- **Change: returning to DSH now needs a double-click on the pet.** A single click used to launch the browser, which fired on stray clicks and on drags that barely moved. Single click is now inert; double-click the pet (or use the right-click menu's *Open DeepSeek Harness*) to go back. The bubble keeps its own single-click = expand behaviour.
+
 ## 0.1.4 (2026-09-10)
 
 - **Fix: the desktop pet was bigger than the in-page pet.** The two surfaces used different base metrics (in-page: width `132 × scale`; desktop window: height `182 × scale`), which is invisible for a tall sprite but made a near-square pet ~35% larger in desktop mode. Both now size from the same base width, with height following the image aspect ratio.

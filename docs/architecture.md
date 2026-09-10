@@ -60,8 +60,8 @@ All state comes from polling the host routes with `fetch` (`/activity` every 1.2
 ## Desktop helper (`runtime/electron-helper/`)
 
 - **main.js** spawns one `BrowserWindow`: `transparent`, `frame: false`, `alwaysOnTop: 'screen-saver'`, `skipTaskbar`, non-resizable, no shadow. Click-through by default (`setIgnoreMouseEvents(true, { forward: true })`); the renderer flips interactive mode while the pointer is over the pet. Topmost is re-asserted on `blur` and on a 2s interval — required on Windows, where non-focusable topmost windows get demoted.
-- **preload.js** exposes only `petBridge.setInteractive / openSite / move / resize`.
-- **renderer.js** polls `/activity` + `/state`, renders the bubble (compact ↔ expanded step log), drags via pointer capture, opens DSH on left click, and offers the right-click menu (restore bubble / open DSH / hide desktop pet).
+- **preload.js** exposes only `petBridge.setInteractive / openSite / dragStart / dragEnd / resize`.
+- **renderer.js** polls `/activity` + `/state`, renders the bubble (compact ↔ expanded step log), and opens DSH on **double-click** — a single click stays inert so a stray click or a barely-moving drag can't launch a browser. Right-click offers restore bubble / open DSH / hide desktop pet. Dragging is delegated to the main process, which follows the OS cursor (`screen.getCursorScreenPoint`) — coordinates a moving window cannot perturb.
 
 ## Invariants
 
