@@ -51,22 +51,26 @@
   }
 
   // Pet size: a uniform multiplier owned by the host config (shared with the
-  // in-page pet and the Settings slider). Plain wheel over the window resizes;
-  // the image keeps its aspect ratio, the bubble is re-pinned just above it.
+  // in-page pet and the Settings slider). Plain wheel over the window resizes.
+  // The base metric is the WIDTH (132 * scale) — the same base the in-page pet
+  // uses — so the pet is exactly the same size in both modes; height follows the
+  // image's aspect ratio.
   // refit() fits the window around BOTH the pet and the bubble, so the bubble
   // can report a fuller status (expanded step log) without the window blowing up.
-  const BASE_IMG_H = 182;
+  const BASE_IMG_W = 132;
   let scale = 1;
   // Only resize when the size actually changed: re-issuing an identical resize
   // every tick makes Windows' fractional-DPI bounds round-trip walk the window
   // down the screen a pixel at a time.
   const lastFit = { w: 0, h: 0 };
   function refit() {
-    const imgH = Math.round(BASE_IMG_H * scale);
-    img.style.height = imgH + 'px';
+    const imgW = Math.max(40, Math.round(BASE_IMG_W * scale));
+    img.style.width = imgW + 'px';
+    img.style.height = 'auto';
+    const aspect = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 0.9;
+    const imgH = Math.round(imgW / aspect);
     bubble.style.bottom = (imgH + 8) + 'px';
-    const aspect = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 0.65;
-    let w = Math.max(150, Math.round(220 * scale), Math.round(imgH * aspect) + 24);
+    let w = Math.max(150, imgW + 24);
     let h = Math.max(120, imgH + Math.max(Math.round(72 * scale), 96));
     if (bubble.style.display !== 'none' && bubble.scrollWidth > 0) {
       const bw = Math.min(Math.ceil(bubble.scrollWidth) + 28, 1060); // bubble is capped at 1000px; grow the window with it
@@ -211,28 +215,29 @@
     hideBubble();
   });
 
-  // drag — pointer capture keeps the move stream alive even when the cursor
-  // outruns the small window, and we hold the window interactive for the whole
-  // drag (a mouseleave during a fast drag would otherwise flip it click-through
-  // mid-drag and drop the trail).
-  let drag = null;
+  // drag — the main process owns the motion: it follows the OS cursor position
+  // (screen.getCursorScreenPoint), which cannot be perturbed by our own window
+  // moving. The renderer only opens/closes the drag and keeps the window
+  // interactive for its whole duration (pointer capture guarantees we still get
+  // the pointerup even if the cursor leaves the window).
+  let drag = false;
   img.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     try { img.setPointerCapture(e.pointerId); } catch (err) {}
-    drag = { sx: e.screenX, sy: e.screenY, wx: window.screenX, wy: window.screenY };
+    drag = true;
     window.petBridge.setInteractive(true);
+    window.petBridge.dragStart();
     e.preventDefault();
-  });
-  window.addEventListener('pointermove', (e) => {
-    if (drag) window.petBridge.move(drag.wx + (e.screenX - drag.sx), drag.wy + (e.screenY - drag.sy));
   });
   const endDrag = () => {
     if (!drag) return;
-    drag = null;
+    drag = false;
+    window.petBridge.dragEnd();
     window.petBridge.setInteractive(true); // pointer is still over the pet when a drag ends
   };
   window.addEventListener('pointerup', endDrag);
   window.addEventListener('pointercancel', endDrag);
+  window.addEventListener('blur', endDrag); // alt-tab mid-drag must not leave the pet glued to the cursor
 
   // hover -> interactive (so clicks work); leave -> click-through (never mid-drag)
   root.addEventListener('mouseenter', () => window.petBridge.setInteractive(true));

@@ -19,9 +19,19 @@ app.disableHardwareAcceleration();
 
 let win = null;
 let topmostTimer = null;
+let dragTimer = null;
+let dragState = null;
 const baseUrl = process.env.DSH_CAPYREP_BASE_URL || 'http://127.0.0.1:3080';
 const W = 220;
 const H = 250;
+
+function stopDrag() {
+  if (dragTimer) {
+    clearInterval(dragTimer);
+    dragTimer = null;
+  }
+  dragState = null;
+}
 
 function reassertTopmost() {
   if (!win || win.isDestroyed()) return;
@@ -72,6 +82,7 @@ function createWindow() {
   win.on('blur', () => reassertTopmost());
   win.on('closed', () => {
     win = null;
+    stopDrag();
     if (topmostTimer) {
       clearInterval(topmostTimer);
       topmostTimer = null;
@@ -126,16 +137,37 @@ app.whenReady().then(() => {
     reassertTopmost();
   });
 
-  ipcMain.on('homura:move', (event, p) => {
+  // ---- dragging ----------------------------------------------------------
+  // The drag loop lives here and reads the OS cursor position
+  // (screen.getCursorScreenPoint) instead of renderer pointer coordinates.
+  // A window that moves under the cursor feeds its own movement back into the
+  // next pointer coordinate the renderer sees, which makes the pet drift away
+  // from the cursor; the OS cursor position cannot be affected by our window.
+  ipcMain.on('homura:drag-start', (event) => {
     const w = BrowserWindow.fromWebContents(event.sender);
     if (!w || w.isDestroyed()) return;
-    const x = Number(p && p.x);
-    const y = Number(p && p.y);
-    if (Number.isFinite(x) && Number.isFinite(y)) w.setPosition(Math.round(x), Math.round(y), false);
+    const c = screen.getCursorScreenPoint();
+    const b = w.getBounds();
+    dragState = { win: w, cx: c.x, cy: c.y, wx: b.x, wy: b.y };
+    if (dragTimer) clearInterval(dragTimer);
+    dragTimer = setInterval(() => {
+      if (!dragState) return stopDrag();
+      const win = dragState.win;
+      if (!win || win.isDestroyed()) return stopDrag();
+      const p = screen.getCursorScreenPoint();
+      const area = screen.getDisplayNearestPoint(p).workArea;
+      const x = Math.min(Math.max(area.x, dragState.wx + (p.x - dragState.cx)), area.x + Math.max(0, area.width - 60));
+      const y = Math.min(Math.max(area.y, dragState.wy + (p.y - dragState.cy)), area.y + Math.max(0, area.height - 60));
+      const cur = win.getBounds();
+      if (cur.x !== x || cur.y !== y) win.setPosition(x, y, false);
+    }, 16);
   });
+
+  ipcMain.on('homura:drag-end', () => stopDrag());
 });
 
 app.on('window-all-closed', () => {
+  stopDrag();
   if (topmostTimer) {
     clearInterval(topmostTimer);
     topmostTimer = null;

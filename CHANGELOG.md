@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4 (2026-09-10)
+
+- **Fix: the desktop pet was bigger than the in-page pet.** The two surfaces used different base metrics (in-page: width `132 × scale`; desktop window: height `182 × scale`), which is invisible for a tall sprite but made a near-square pet ~35% larger in desktop mode. Both now size from the same base width, with height following the image aspect ratio.
+- **Fix: dragging ran away from the cursor.** The drag computed the target from the renderer's pointer coordinates, so a window moving under the cursor fed its own movement back into the next coordinate — the pet drifted off in the wrong direction while the button was held. Dragging is now owned by the **main process**, which tracks the OS cursor (`screen.getCursorScreenPoint`) and moves the window itself; the coordinates can no longer be affected by our own window. Also clamps to the work area and ends the drag on `pointercancel` / window blur.
+
 ## 0.1.3 (2026-09-09)
 
 - **Fix: the pet no longer sinks.** On Windows with fractional display scaling, every redundant `setBounds` round-trip rounded the window position a pixel further down — and the renderer re-issued a resize on every poll tick, so the pet visibly sank a little each second. The renderer now only calls resize when the computed size actually changed, and the main process skips `setBounds` when the size is unchanged.

@@ -8,8 +8,14 @@ contextBridge.exposeInMainWorld('petBridge', {
   openSite(url) {
     ipcRenderer.send('homura:open-site', url);
   },
-  move(x, y) {
-    ipcRenderer.send('homura:move', { x, y });
+  // Dragging is owned by the main process: it tracks the OS cursor position and
+  // moves the window itself, so a moving window can never feed back into the
+  // coordinates the renderer sees.
+  dragStart() {
+    ipcRenderer.send('homura:drag-start');
+  },
+  dragEnd() {
+    ipcRenderer.send('homura:drag-end');
   },
   resize(size) {
     ipcRenderer.send('homura:resize', size);

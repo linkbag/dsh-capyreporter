@@ -23,8 +23,8 @@
       #bubble {
         position: absolute;
         /* JS pins this just above the pet image on every size change;
-           the default covers the unscaled 182px pet. */
-        bottom: 190px;
+           the default covers the unscaled 132px-wide pet. */
+        bottom: 143px;
         left: 50%;
         transform: translateX(-50%);
         min-width: 90px;
@@ -103,8 +103,10 @@
         bottom: 0;
         left: 50%;
         transform: translateX(-50%);
-        height: 182px;
-        width: auto;
+        /* width is the base metric (132 * scale), the same as the in-page pet;
+           JS keeps it in sync and height follows the image aspect ratio */
+        width: 132px;
+        height: auto;
         pointer-events: auto;
         cursor: grab;
         touch-action: none;
