@@ -1,0 +1,119 @@
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { createActivityTracker, extractEventText, outcomeLabel, stepLineOf } from '../lib/activity.js'
+
+const event = (type, data = {}) => ({ type, data })
+function setup() {
+  let time = 1000
+  const titles = new Map()
+  const tracker = createActivityTracker({ now: () => time, titleFor: input => titles.get(input?.id || input) })
+  const status = (id, status) => tracker.status({ agent: { id }, status })
+  const send = (id, type, data) => tracker.event({ id }, event(type, data))
+  return { tracker, titles, status, send, advance: ms => { time += ms } }
+}
+test('real nested DSH text chunks preserve spaces, whole messages replace, and reasoning stays private', () => {
+  assert.deepEqual(extractEventText(event('assistant/chunk', { chunk: { type: 'text-delta', text: ' hello ' } })), { text: ' hello ', append: true })
+  assert.deepEqual(extractEventText(event('assistant/message', { message: { content: [{ type: 'reasoning', text: 'secret' }, { type: 'text', text: 'hello' }, { type: 'text', text: 'world' }] } })), { text: 'hello\nworld', append: false })
+  for (const type of ['reasoning-delta', 'tool-call-delta', 'tool-result']) assert.equal(extractEventText(event('assistant/chunk', { chunk: { type, text: 'secret' } })), null)
+  for (const type of ['user/message', 'tool/result', 'session/metadata']) assert.equal(extractEventText(event(type, { text: 'secret', output: 'secret' })), null)
+})
+test('real DSH tool events use nested names and failed results', () => {
+  assert.equal(stepLineOf(event('tool/call', { name: 'ops_bash' })).line, '🔧 ops_bash')
+  assert.equal(stepLineOf(event('tool/result', { message: { content: [{ type: 'tool-result', isError: true }] } })).kind, 'error')
+  assert.equal(stepLineOf(event('assistant/chunk', { chunk: { type: 'reasoning-delta', text: 'private' } })).line, '💭 Thinking…')
+})
+test('metadata, replay and text-only events never create running agents', () => {
+  const { tracker, send } = setup()
+  send('a', 'session/metadata', { title: 'metadata' })
+  send('a', 'assistant/chunk', { chunk: { type: 'text-delta', text: 'old replay' } })
+  assert.equal(tracker.snapshot().runningCount, 0)
+  assert.equal(tracker.snapshot().completed, null)
+})
+test('streaming words survive whitespace deltas and final messages do not duplicate previews', () => {
+  const { tracker, status, send } = setup()
+  status('a', 'running')
+  for (const text of ['hello', ' ', 'world']) send('a', 'assistant/chunk', { step: 1, chunk: { type: 'text-delta', text } })
+  assert.equal(tracker.snapshot().running[0].preview, 'hello world')
+  send('a', 'assistant/message', { message: { content: [{ type: 'text', text: 'hello world!' }] } })
+  assert.equal(tracker.snapshot().running[0].preview, 'hello world!')
+})
+test('step and turn boundaries reset old assistant text without dropping live identity', () => {
+  const { tracker, status, send } = setup()
+  status('a', 'running')
+  send('a', 'assistant/chunk', { step: 1, chunk: { type: 'text-delta', text: 'old' } })
+  send('a', 'step/start', { step: 2 })
+  send('a', 'assistant/chunk', { step: 2, chunk: { type: 'text-delta', text: 'new' } })
+  assert.equal(tracker.snapshot().running[0].preview, 'new')
+  send('a', 'turn/start', { turn: 2 })
+  assert.equal(tracker.snapshot().running[0].preview, null)
+  assert.equal(tracker.snapshot().runningCount, 1)
+})
+test('same-step failed attempts and tool-only authoritative messages cannot leak stale preview', () => {
+  const { tracker, status, send } = setup()
+  status('a', 'running')
+  const chunk = value => send('a', 'assistant/chunk', { step: 1, chunk: value })
+  chunk({ type: 'text-delta', text: 'Failed partial answer' })
+  chunk({ type: 'finish', reason: { kind: 'error', failure: { message: 'retry' } } })
+  chunk({ type: 'text-delta', text: 'Successful retry' })
+  assert.equal(tracker.snapshot().running[0].preview, 'Successful retry')
+  send('a', 'assistant/message', { step: 1, message: { content: [{ type: 'tool-call', name: 'read' }] } })
+  assert.equal(tracker.snapshot().running[0].preview, null)
+})
+for (const outcome of ['completed', 'aborted', 'error', 'blocked', 'max-tokens', 'interrupted']) {
+  test('idle preserves authoritative turn/end outcome: ' + outcome, () => {
+    const { tracker, status, send } = setup()
+    status('a', 'running')
+    send('a', 'turn/end', { reason: { kind: outcome } })
+    status('a', 'idle')
+    assert.equal(tracker.snapshot().completed.outcome, outcome)
+    assert.equal(outcomeLabel(outcome).startsWith('✅'), outcome === 'completed')
+    assert.equal(tracker.snapshot().runningCount, 0)
+  })
+}
+test('idle without turn/end and disposal never invent successful completion', () => {
+  const { tracker, status } = setup()
+  status('a', 'running'); status('a', 'idle')
+  assert.equal(tracker.snapshot().completed.outcome, 'idle')
+  status('b', 'running'); tracker.dispose('b')
+  assert.equal(tracker.snapshot().completed.outcome, 'aborted')
+  tracker.dispose('b')
+  assert.equal(tracker.snapshot().completions.length, 2)
+})
+test('parallel sessions retain independent completion acknowledgments, unique timestamps and titles', () => {
+  const { tracker, status, titles } = setup()
+  titles.set('a', 'Project · Session A'); titles.set('b', 'Project · Session B')
+  status('a', 'running'); status('b', 'running'); status('a', 'idle')
+  const first = tracker.snapshot().completed
+  status('c', 'running')
+  assert.equal(tracker.snapshot().completed.at, first.at)
+  assert.equal(tracker.snapshot().runningCount, 2)
+  status('b', 'idle')
+  const second = tracker.snapshot().completed
+  assert.ok(second.at > first.at)
+  assert.equal(second.title, 'Project · Session B')
+  tracker.dismiss(first.at)
+  assert.equal(tracker.snapshot().completed.at, second.at)
+  status('b', 'running')
+  assert.equal(tracker.snapshot().completed, null)
+})
+test('titles refresh as late workspace/session labels become available', () => {
+  const { tracker, titles, status } = setup()
+  status('a', 'running')
+  assert.equal(tracker.snapshot().running[0].title, 'Session')
+  titles.set('a', 'Project · New session name')
+  assert.equal(tracker.snapshot().running[0].title, 'Project · New session name')
+})
+test('history, previews and completion queue are bounded and expire; destruction releases everything', () => {
+  const { tracker, status, send, advance } = setup()
+  status('a', 'running')
+  for (let i = 0; i < 100; i++) { send('a', 'tool/call', { name: 'tool-' + i }); send('a', 'assistant/chunk', { step: 1, chunk: { type: 'text-delta', text: 'x'.repeat(100) } }) }
+  assert.ok(tracker.snapshot().running[0].lines.length <= 12)
+  assert.ok(tracker.snapshot().running[0].preview.length <= 121)
+  status('a', 'idle')
+  for (let i = 0; i < 30; i++) { status('agent-' + i, 'running'); status('agent-' + i, 'idle') }
+  assert.equal(tracker.snapshot().completions.length, 20)
+  advance(21_601_000)
+  assert.equal(tracker.snapshot().completed, null)
+  status('b', 'running'); tracker.destroy()
+  assert.equal(tracker.snapshot().runningCount, 0)
+})

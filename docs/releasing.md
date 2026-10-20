@@ -1,45 +1,37 @@
 # Releasing
 
-## 1. Publish to npm
+Use a Git checkout; installed runtime packages intentionally omit browser test fixtures and dev dependencies. Publishing is a maintainer action, not part of the audit or smoke tests.
+
+## 1. Validate before versioning
 
 ```sh
-cd <repo>
-npm login                       # or a granular token with "Bypass 2FA"
-npm publish --access public
+npm ci --ignore-scripts
+npm test
+npm run verify
+npm run test:browser
+npm pack --dry-run
 ```
 
-If publishing hits `403 Two-factor ... bypass 2fa`:
+`test:browser` uses local Chrome unless `DSH_TEST_BROWSER_CHANNEL=chromium` is set. Native coverage is explicitly skipped when Electron is unavailable; for a desktop release, run it on Windows with `DSH_PET_ELECTRON_PATH` set to a supported Electron executable. Also manually check mixed-DPI/multiple monitors, taskbar work areas and fullscreen behavior. CI defines Windows/Linux checks on Node 20/22/24 and Chromium smoke coverage; that workflow configuration is not evidence those remote jobs have already passed.
 
-1. Create a **granular access token** at <https://www.npmjs.com/settings/you/tokens>:
-   - Packages and scopes → **Read and write**
-   - scope: **All packages**
-   - **Bypass Two-Factor Authentication** → tick it
-2. `npm config set //registry.npmjs.org/:_authToken npm_XXX`
-3. `npm publish --access public`
-4. `npm config delete //registry.npmjs.org/:_authToken`
+Inspect the tarball file list. It must include all host helper modules, the desktop policy/preload/page, artwork and the Cordis patch. `prepack` rejects UTF-8 BOMs. Runtime sources are handwritten JavaScript; there is no build step. No automatic Electron download or external service is required at runtime.
 
-## 2. Bump the version
+## 2. Version before publication
 
-Edit `package.json` `version` and `CHANGELOG.md`, then:
+Promote the Unreleased changelog and bump both manifest/lockfile, then re-run validation. Commit the reviewed, explicit files and tag the intended release. Never publish a changed package as the already-published version.
 
 ```sh
-git add -A && git commit -m "Release v0.x.y" && git push
-npm publish
+npm version patch --no-git-tag-version
 ```
 
-## 3. List in the DSH plugin catalog
+Use the existing publish workflow and a short-lived, least-privileged `NPM_TOKEN` scoped only to this package, or configure npm trusted publishing according to your organization policy. Do not paste tokens into commits, terminal transcripts, or broad all-package permanent credentials. No token is needed for local tests or packing.
 
-Open a PR against <https://github.com/awesome-dsh-plugin/awesome-dsh-plugin> adding one file:
+## 3. Verify deployment
 
-`data/plugins/linkbag__dsh-capyreporter.yml`
+Keep a copy of the previous installed package and preserve `$DSH_HOME/capyreporter.json`. Reactivate the plugin or restart DSH **at a safe stopping point**, then refresh the existing DSH GUI. A page refresh alone does not reload host code, and starting another Vite server does not update DSH.
 
-```yaml
-url: https://github.com/linkbag/dsh-capyreporter
-name: linkbag/dsh-capyreporter
-category: ui
-description:
-  en: 'Always-on-top capybara task reporter for DSH Web — a transparent floating pet that narrates each trajectory step, names the project it reports for, and alerts you when a task completes while you work elsewhere.'
-  zh: '为 DSH Web 打造的永远置顶的水豚任务播报宠物——透明悬浮气泡逐条播报运行轨迹、标明所属项目，任务完成时提醒正在别处忙碌的你。'
-```
+Check state from the authenticated DSH page console, inspect a real running session/tool event, cancel a separate harmless run, and confirm desktop readiness before the page pet is hidden. Do not create fake user activity in production to make an audit look green. Remote/proxied installations remain unsupported by the current local-only route policy.
 
-Requirements (checked by CI): the repo declares `dsh.bundle` in `package.json`, is at least 1 day old, and has ≥10 commits. Do not edit the generated READMEs.
+## 4. Catalog metadata (if required)
+
+The existing catalog is <https://github.com/awesome-dsh-plugin/awesome-dsh-plugin>. Check its current contribution requirements before submitting `data/plugins/linkbag__dsh-capyreporter.yml`; do not edit generated catalog READMEs. The package must retain its `dsh.bundle` and `./client` export metadata.

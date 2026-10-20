@@ -1,38 +1,48 @@
 # Troubleshooting
 
-## The desktop window does not appear
+## Desktop does not appear / duplicate or ghost pet
 
-CapyReporter stays **in-page** unless an Electron binary is available. Check in this order:
+1. Check Settings → CapyReporter for enabled, desktop status, and desktop error. `starting` is **not** ready.
+2. Install an Electron binary yourself; set `DSH_PET_ELECTRON_PATH` or `ELECTRON_PATH`, or use `$DSH_HOME/electron/`. No automatic download occurs. Legacy Windows install locations are still supported.
+3. The actual DSH port is automatic. If overriding `DSH_CAPYREP_BASE_URL`, use only an exact loopback origin such as `http://127.0.0.1:3080`. Do not include credentials, paths, query parameters or login tokens.
+4. Toggle **Use page only**, then **Enable desktop** to retry. There is deliberately no endless crash/restart loop.
 
-1. `C:\Users\YOURUSER\.dsh\electron\electron.exe` exists (the default location),
-   or set `DSH_PET_ELECTRON_PATH` to any `electron.exe` / `electron` binary.
-2. Set `DSH_CAPYREP_BASE_URL` if DSH web is not at `http://127.0.0.1:3080`.
-3. Check the status endpoint: `GET http://127.0.0.1:3080/dsh-capyreporter/state` should
-   report `"desktop": true` once the window is up.
+The page pet remains until artwork and activity load and the renderer heartbeats. A heartbeat older than ten seconds restores the page fallback; the host watchdog stops an unresponsive helper after ~20 seconds. A disconnected helper closes after three failed polls. An orderly plugin stop waits for helper shutdown. Reloading only the page does not replace old host code.
 
-## The window appears but slips behind other windows
+Do **not** launch the helper manually without its DSH host: the private, activation-scoped capability is required. Inspect host warnings for launch/load failures instead. GPU acceleration is disabled by design for transparent-window compatibility.
 
-The topmost level is re-asserted on blur and every 2s. If some window still covers the
-pet (rare), that window has a higher z-order (usually a fullscreen exclusive game).
+## Checking state safely
 
-## The pet image is blank / broken
+From the **DSH page's** developer console:
 
-The image is served by the host at `/dsh-capyreporter/image` (byte-exact; no base64 in
-the page). A broken image means the host could not read `assets/capybara.png` — reinstall
-the package. Uploading your own transparent PNG happens in **Settings → CapyReporter**.
-
-## Bubble text is truncated
-
-The bubble clamps the headline to 2 lines and the detail to 3, and expands on click to
-the full scrollable step log; double-click dismisses; right-click → **Restore bubble**.
-
-## GPU crashes / the helper quits on startup
-
-On hybrid-GPU laptops a transparent window can crash at startup; the helper disables
-hardware acceleration by design. If it still fails, run the helper manually:
-
-```sh
-C:\Users\YOURUSER\.dsh\electron\electron.exe <plugin>/runtime/electron-helper/main.js
+```js
+await fetch('/dsh-capyreporter/state', { cache: 'no-store' }).then(r => r.json())
 ```
 
-and read the console output.
+Opening a reporter route as a standalone tab, a raw unauthenticated CLI request, cross-origin fetch, or a `file://` renderer is rejected by design. No public CORS bypass is provided. The boundary is local-only and is not an authentication guarantee against other local processes. For a caller using `curl`, a forged same-origin header can pass; that does not make it a supported remote API.
+
+## Blank artwork / replacement not updating
+
+PNG only, at most 4 MiB and 4096 pixels per side. SVG, malformed base64 and truncated containers are rejected. A structurally valid but undecodable PNG can still fail browser decoding; this validator does not implement full CRC/deflate verification. Try another PNG or **Reset artwork**. If the bundled asset is missing, reinstall the package.
+
+The image revision changes on every replacement/reset, including custom-to-custom changes. New desktop sizing uses natural aspect ratio with a display-relative pixel cap, not `vh` of a moving/self-resizing window. Native equal-size resize requests are ignored to preserve the fractional-DPI sinking fix.
+
+## Activity missing, wrong, or surprising
+
+- Only running agents create live rows; metadata and replay do not.
+- Completed means the latest authoritative DSH turn ended with `completed`. Cancellation, error, blocked, output limit and interruption have distinct labels; idle without a turn outcome is not called success.
+- Project and session names depend on optional host services and refresh when available. Otherwise the safe fallback is `Session`.
+- Details show the last 12 bounded status lines and a short text preview, not the entire session. Reasoning, prompts, arguments and tool output are deliberately excluded.
+- Results survive unrelated session starts, but restarting the same session clears its previous unread result. Results expire after six hours, and at most 20 are retained.
+
+## Controls / settings
+
+Use **Ctrl/Cmd + wheel**, not plain wheel. Ordinary wheel scrolling must remain usable inside Details. Click/right-click or Enter/Space opens controls; Escape closes them. Drag is separate from click. **Hide pet** does not uninstall anything.
+
+Page position is browser-local and clamped to the current viewport; desktop position is not persisted. Host preferences are in `$DSH_HOME/capyreporter.json`. Corrupt config is logged, and only a missing config triggers legacy migration. A failed save is shown rather than falsely claiming success.
+
+Notifications are off by default; both the plugin toggle and browser permission are needed. They only fire while away from the page. Browser/OS policies may suppress them, and several DSH tabs can notify independently.
+
+## Verification without touching preferences
+
+Run `npm ci`, `npm test`, `npm run verify`, then `npm run test:browser` in a development copy. Chrome is the default real-browser channel; set `DSH_TEST_BROWSER_CHANNEL=chromium` after installing a Playwright Chromium browser if needed. Native smoke coverage uses an existing Electron executable and explicitly skips if unavailable. These fixtures use temporary configuration and ephemeral ports, not the running DSH server.

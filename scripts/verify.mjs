@@ -1,5 +1,6 @@
 // Lightweight smoke check for the CapyReporter bundle. Run: node scripts/verify.mjs
 import { existsSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import { join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -13,8 +14,15 @@ if (typeof host.apply !== 'function' || !Array.isArray(host.inject) || typeof ho
 }
 if (!host.inject.includes('webServer')) problems.push('host must inject webServer')
 
-for (const f of ['lib/client.js', 'cordis.patch.yml', 'assets/capybara.png', 'runtime/electron-helper/main.js', 'runtime/electron-helper/renderer.js']) {
+const sources = ['lib/index.js', 'lib/client.js', 'lib/activity.js', 'lib/security.js',
+  'runtime/electron-helper/main.js', 'runtime/electron-helper/preload.js',
+  'runtime/electron-helper/renderer.js', 'runtime/electron-helper/policy.cjs']
+for (const f of [...sources, 'cordis.patch.yml', 'assets/capybara.png', 'runtime/electron-helper/index.html', 'runtime/electron-helper/package.json']) {
   if (!existsSync(join(root, f))) problems.push('missing file: ' + f)
+}
+for (const f of sources) {
+  const result = spawnSync(process.execPath, ['--check', join(root, f)], { stdio: 'inherit' })
+  if (result.status !== 0) problems.push('syntax check failed: ' + f)
 }
 
 const pkg = JSON.parse(await import('node:fs/promises').then((fs) => fs.readFile(join(root, 'package.json'), 'utf8')))

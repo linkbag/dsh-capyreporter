@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.6 (2026-10-19) — audit hardening + latest-DSH compatibility
+
+- Re-verified against DeepSeek Harness 0.2.1-alpha.1: `webServer` prefix routes, `slots.inject`/`register`, the combo client-bundle contract (`exports["./client"]`), and the `agent/status`, `agent/disposed`, `session/event`, `session/disposed` payloads still match. Removed the obsolete `@deepseek-ai/dsh-client-runtime` client inject/peer, added the `@deepseek-ai/dsh` peer, and bumped the version.
+- Consume real nested DSH events, retain token spacing, and distinguish authoritative turn outcomes from idle. Preserve unread results independently across parallel sessions and seed already-running agents on activation.
+- Reject cross-origin/non-loopback reads, GET mutations, malformed/aborted/oversized JSON and non-PNG/unbounded artwork. Remove wildcard CORS. Save settings atomically with visible failures. Browser authorisation accepts Chromium's `sec-fetch-site: same-origin` fetch metadata when a strict referrer policy strips Origin/Referer; cross-site, same-site and opaque requests remain rejected.
+- Isolate activation state, subscriptions and child lifecycle. Derive the actual host port, scrub child environment secrets (keeping common OS variables case-insensitively), require desktop readiness/heartbeat before suppressing the page, and await shutdown. A cold Electron start gets a 60 s grace period; 20 s once a heartbeat proves liveness.
+- Sandbox the desktop renderer, restrict CSP/navigation/permissions, validate IPC sender's main frame, and proxy an explicit request allowlist through Electron main with a private capability.
+- Fix image replacement cache keys, async settings/poll races, portrait sizing feedback, secondary-display resize anchors, and preserve same-size/fractional-DPI and OS-cursor drag fixes. The helper re-anchors its window after monitor add/remove/metrics changes so the pet cannot stay off-screen while the page pet is suppressed.
+- Share cancellable, deadline-bound browser polling; surface disconnects; clean up listeners/styles; separate drag/click, add keyboard controls and reduced-motion styling. Away notifications are explicitly opt-in, no longer rely solely on throttled background timers, and already-notified completions survive a reload via `sessionStorage`. The size slider keeps keyboard focus after stepping and redundant scale writes are skipped.
+- Expand 13 helper tests to 54 host/activity/security/manifest tests plus real Chromium/Electron smoke coverage, including slot metadata, same-origin authorisation and bundle-contract assertions; add an architecture/comparison audit and correct installation/control/security documentation.
+
 ## 0.1.5 (2026-09-10)
 
 - **Change: returning to DSH now needs a double-click on the pet.** A single click used to launch the browser, which fired on stray clicks and on drags that barely moved. Single click is now inert; double-click the pet (or use the right-click menu's *Open DeepSeek Harness*) to go back. The bubble keeps its own single-click = expand behaviour.

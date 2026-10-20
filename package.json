@@ -1,6 +1,6 @@
 {
   "name": "dsh-capyreporter",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "CapyReporter — an always-on-top capybara task reporter for the DeepSeek Harness Web UI. A transparent floating pet that narrates each trajectory step in a speech bubble, tells you which project is reporting, alerts you when a task completes while you are away, and lets you upload your own pet art.",
   "keywords": [
     "dsh",
@@ -37,6 +37,10 @@
     "lib",
     "assets",
     "runtime",
+    "docs",
+    "CHANGELOG.md",
+    "scripts/check-bom.mjs",
+    "scripts/verify.mjs",
     "cordis.patch.yml",
     "README.md",
     "README.zh.md",
@@ -45,6 +49,7 @@
   "scripts": {
     "test": "node --test \"test/*.test.mjs\"",
     "verify": "node scripts/verify.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs",
     "prepack": "node scripts/check-bom.mjs"
   },
   "dsh": {
@@ -53,7 +58,6 @@
     },
     "client": {
       "inject": [
-        "@deepseek-ai/dsh-client-runtime",
         "@deepseek-ai/dsh-client-connection"
       ],
       "platform": "web"
@@ -61,11 +65,15 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-runtime": "^0.1.1-rc.2 || >=0.1.2-0",
+    "@deepseek-ai/dsh": "^0.1.1-rc.2 || >=0.1.2-0",
     "@deepseek-ai/dsh-client-connection": "^0.1.1-rc.2 || >=0.1.2-0",
     "@deepseek-ai/dsh-client-ui-slots": "^0.1.1-rc.2 || >=0.1.2-0",
     "@deepseek-ai/dsh-host-webserver": "^0.1.1-rc.2 || >=0.1.2-0",
     "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1",
+    "react-dom": "^18.3.1"
   },
   "engines": {
     "node": ">=20"

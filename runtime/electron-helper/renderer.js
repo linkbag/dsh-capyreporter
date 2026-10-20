@@ -1,274 +1,121 @@
-// renderer for the always-on-top CapyReporter window. Fetches image + activity from the
-// DSH host over HTTP; drags to move; double-click opens DSH; right-click shows a menu.
-//
-// Bubble UX: compact by default (headline + latest status line); single click
-// expands into a scrollable step log; double click dismisses; the right-click
-// menu can restore the bubble after a dismissal.
+// Sandboxed renderer. Host IO is a narrow, authenticated main-process bridge.
 (function () {
-  const params = new URLSearchParams(location.search);
-  const base = params.get('baseUrl') || 'http://127.0.0.1:3080';
-  const ROOT = base + '/dsh-capyreporter';
-
-  const img = document.getElementById('img');
-  const bubble = document.getElementById('bubble');
-  const head = document.getElementById('bubbleHead');
-  const detail = document.getElementById('bubbleDetail');
-  const log = document.getElementById('bubbleLog');
-  const hint = document.getElementById('bubbleHint');
-  const menu = document.getElementById('menu');
-  const root = document.getElementById('root');
-
-  let version = 0;
-  let hasCustom = null;
-  let lastSig = null;
-  let suppressedSig = null; // bubble hidden by double-click; auto-clears when content changes
-  let expanded = false;
-  let lastCharge = null; // last rendered status {kind, head, lines, preview, hint, at}
-
-  // Content signature of the activity feed: the bubble auto-(re)appears whenever
-  // the signature changes (new step line, task count change, completion).
-  function activitySig(a) {
-    if (!a) return 'none';
-    if (a.completed) return 'done:' + a.completed.at;
-    if (a.runningCount > 0) {
-      const f = (a.running && a.running[0]) || {};
-      const lines = (f.lines || []).join('|');
-      return 'work:' + a.runningCount + ':' + (f.title || '') + ':' + lines;
-    }
-    return 'none';
-  }
-
-  function chargeOf(a) {
-    if (a && a.completed) {
-      return { kind: 'done', head: '\u2705 Task complete \u2014 ' + (a.completed.title || 'Task'), lines: [], preview: null, hint: 'click to expand \u00B7 double-click to dismiss', at: a.completed.at };
-    }
-    if (a && a.runningCount > 0) {
-      const f = a.running[0] || {};
-      const headStr = a.runningCount > 1 ? '\u23F3 ' + a.runningCount + ' tasks running \u2014 ' + (f.title || 'Session') : '\u23F3 Working: ' + (f.title || 'Session');
-      return { kind: 'working', head: headStr, lines: f.lines || [], preview: f.preview || null, hint: 'click to expand \u00B7 double-click to hide', at: null };
-    }
-    return null;
-  }
-
-  // Pet size: a uniform multiplier owned by the host config (shared with the
-  // in-page pet and the Settings slider). Plain wheel over the window resizes.
-  // The base metric is the WIDTH (132 * scale) — the same base the in-page pet
-  // uses — so the pet is exactly the same size in both modes; height follows the
-  // image's aspect ratio.
-  // refit() fits the window around BOTH the pet and the bubble, so the bubble
-  // can report a fuller status (expanded step log) without the window blowing up.
-  const BASE_IMG_W = 132;
-  let scale = 1;
-  // Only resize when the size actually changed: re-issuing an identical resize
-  // every tick makes Windows' fractional-DPI bounds round-trip walk the window
-  // down the screen a pixel at a time.
-  const lastFit = { w: 0, h: 0 };
+  const bridge = window.petBridge;
+  const el = id => document.getElementById(id);
+  const img = el('img'), bubble = el('bubble'), head = el('bubbleHead'), detail = el('bubbleDetail'), log = el('bubbleLog'), menu = el('menu');
+  let scale = 1, imageRevision = null, expanded = false, suppressed = null, activity = null, sig = null;
+  let timer = null, resizeTimer = null, stopped = false, failures = 0, pointer = null, dragging = false, interactive = false;
+  const fit = { w: 0, h: 0 };
+  function setInteractive(value) { if (value !== interactive) { interactive = value; bridge.setInteractive(value); } }
   function refit() {
-    const imgW = Math.max(40, Math.round(BASE_IMG_W * scale));
-    img.style.width = imgW + 'px';
-    img.style.height = 'auto';
-    const aspect = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 0.9;
-    const imgH = Math.round(imgW / aspect);
-    bubble.style.bottom = (imgH + 8) + 'px';
-    let w = Math.max(150, imgW + 24);
-    let h = Math.max(120, imgH + Math.max(Math.round(72 * scale), 96));
-    if (bubble.style.display !== 'none' && bubble.scrollWidth > 0) {
-      const bw = Math.min(Math.ceil(bubble.scrollWidth) + 28, 1060); // bubble is capped at 1000px; grow the window with it
-      const bhCap = expanded ? 220 : 170;
-      const bh = Math.min(Math.ceil(bubble.scrollHeight) + 16, bhCap);
-      w = Math.max(w, bw);
-      h = Math.max(h, imgH + 12 + bh);
-    }
-    w = Math.round(w);
-    h = Math.round(h);
-    if (w === lastFit.w && h === lastFit.h) return;
-    lastFit.w = w;
-    lastFit.h = h;
-    window.petBridge.resize({ w: w, h: h });
+    const ratio = img.naturalHeight / img.naturalWidth || 1;
+    const width = Math.max(1, Math.min(Math.round(132 * scale), Math.round(window.screen.availHeight * .6 / ratio)));
+    const imageHeight = Math.max(1, Math.round(width * ratio));
+    // Use display-relative pixels, never vh of this self-resizing window.
+    img.style.width = width + 'px';
+    img.style.height = imageHeight + 'px';
+    bubble.style.bottom = imageHeight + 8 + 'px';
+    const w = Math.max(200, width + 24, bubble.style.display === 'none' ? 0 : 384);
+    const h = Math.min(1500, imageHeight + (bubble.style.display === 'none' ? 40 : Math.min(256, bubble.scrollHeight + 24)));
+    if (fit.w !== w || fit.h !== h) { fit.w = w; fit.h = h; bridge.resize({ w, h: Math.max(100, h) }); }
   }
-  img.addEventListener('load', () => refit());
-  window.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const next = Math.min(2.5, Math.max(0.5, Math.round((scale + (e.deltaY < 0 ? 0.1 : -0.1)) * 10) / 10));
-    if (next === scale) return;
-    scale = next;
-    refit();
-    post('/scale', { scale: scale });
-  }, { passive: false });
-
-  async function loadImage() {
-    img.src = ROOT + '/image?v=' + ++version + '&t=' + Date.now();
-  }
-
-  async function post(path, body) {
-    try {
-      await fetch(ROOT + path, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body || {}),
-      });
-    } catch (e) {}
-  }
-
-  function renderBubble(c) {
-    head.textContent = c.head;
-    if (expanded && c.lines.length) {
-      detail.style.display = 'none';
-      log.classList.add('is-on');
-      while (log.firstChild) log.removeChild(log.firstChild);
-      for (const l of c.lines) {
-        const d = document.createElement('div');
-        d.className = 'bub-line';
-        d.textContent = l;
-        log.appendChild(d);
-      }
-      log.scrollTop = log.scrollHeight;
-    } else {
-      log.classList.remove('is-on');
-      const cd = c.lines.length ? c.lines[c.lines.length - 1] : c.preview;
-      if (cd) {
-        detail.textContent = cd;
-        detail.style.display = '-webkit-box';
-      } else {
-        detail.textContent = '';
-        detail.style.display = 'none';
-      }
-    }
-    if (c.hint) {
-      hint.textContent = c.hint;
-      hint.style.display = 'inline';
-    } else {
-      hint.style.display = 'none';
-    }
-    bubble.style.display = 'flex';
-    bubble.dataset.mode = c.kind;
-    if (c.at !== undefined && c.at !== null) bubble.dataset.at = c.at;
-    else delete bubble.dataset.at;
+  function showError(error) {
+    head.textContent = '⚠️ Reporter disconnected — retrying';
+    detail.textContent = error.message;
+    bubble.style.display = 'block';
     refit();
   }
-
-  function hideBubble() {
-    bubble.style.display = 'none';
+  async function image(revision) {
+    const source = await bridge.request('/image');
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => reject(new Error('Pet artwork could not be decoded'));
+      img.src = source;
+    });
+    imageRevision = revision;
     refit();
   }
-
-  function restoreBubble() {
-    suppressedSig = null;
-    expanded = false;
-    if (lastCharge) renderBubble(lastCharge);
+  function render() {
+    const done = activity?.completed, running = activity?.running || [];
+    sig = JSON.stringify([done?.at, ...running.map(row => [row.id, row.title, row.preview, row.lines?.at(-1)])]);
+    if (suppressed === sig || (!done && !running.length)) { bubble.style.display = 'none'; refit(); return; }
+    head.textContent = done ? (done.label || 'Run ended') + ' — ' + done.title + (running.length ? ' · ' + running.length + ' still running' : '') : '⏳ ' + running.length + ' running — ' + running[0].title;
+    detail.textContent = done?.preview || running[0]?.preview || running[0]?.lines?.at(-1) || '';
+    detail.style.display = expanded ? 'none' : 'block';
+    log.classList.toggle('is-on', expanded);
+    log.textContent = [...(done ? [done] : []), ...running].map(row => row.title + '\n' + (row.lines || []).join('\n') + (row.preview ? '\n' + row.preview : '')).join('\n\n');
+    el('detailsButton').textContent = expanded ? 'Collapse' : 'Details';
+    el('detailsButton').setAttribute('aria-expanded', String(expanded));
+    el('dismissButton').textContent = done ? 'Dismiss result' : 'Hide bubble';
+    bubble.style.display = 'block';
+    refit();
   }
-
   async function tick() {
-    // activity -> bubble
+    if (stopped) return;
     try {
-      const a = await (await fetch(ROOT + '/activity')).json();
-      const sig = activitySig(a);
-      lastSig = sig;
-      if (suppressedSig !== null && sig !== suppressedSig) suppressedSig = null; // content changed -> show again
-      if (suppressedSig !== null) {
-        hideBubble();
-      } else {
-        const c = chargeOf(a);
-        lastCharge = c;
-        if (c) renderBubble(c);
-        else hideBubble();
-      }
-    } catch (e) {}
-
-    // state -> refresh image when custom image changes; close if host hid the pet
-    try {
-      const s = await (await fetch(ROOT + '/state')).json();
-      if (s.desktop === false) {
-        window.close();
-        return;
-      }
-      if (hasCustom === null) hasCustom = s.hasCustom;
-      else if (hasCustom !== s.hasCustom) {
-        hasCustom = s.hasCustom;
-        loadImage();
-      }
-      if (typeof s.scale === 'number' && Math.abs(s.scale - scale) > 0.001) {
-        scale = s.scale;
-        refit();
-      }
-    } catch (e) {}
-  }
-
-  // single click -> expand/collapse the step log
-  bubble.addEventListener('click', (ev) => {
-    ev.stopPropagation();
-    expanded = !expanded;
-    if (lastCharge) renderBubble(lastCharge);
-  });
-
-  // double click -> dismiss (hide until the content changes); completed bubbles get dismissed server-side too
-  bubble.addEventListener('dblclick', (ev) => {
-    ev.stopPropagation();
-    expanded = false;
-    if (lastSig) suppressedSig = lastSig;
-    const at = bubble.dataset.at;
-    if (at) {
-      try {
-        post('/dismiss', { at: Number(at) });
-      } catch (e) {}
+      const state = await bridge.request('/state');
+      // `desktop` is deliberately false until *we* finish bootstrap + heartbeat.
+      if (!state.enabled || !state.desktopEnabled) { stopped = true; window.close(); return; }
+      if (!resizeTimer && Number.isFinite(state.scale)) scale = state.scale;
+      const revision = state.imageRevision ?? Number(state.hasCustom);
+      if (imageRevision !== revision) await image(revision);
+      activity = await bridge.request('/activity');
+      if (stopped) return;
+      render();
+      await bridge.request('/desktop/heartbeat', {});
+      failures = 0;
+    } catch (error) {
+      if (stopped) return;
+      showError(error);
+      // Stop ghost/orphan pets and allow the browser fallback after lost hosts.
+      if (++failures >= 3) { stopped = true; window.close(); return; }
+    } finally {
+      if (!stopped) timer = setTimeout(tick, failures ? 2000 : 1200);
     }
-    hideBubble();
+  }
+  el('detailsButton').addEventListener('click', () => { expanded = !expanded; render(); });
+  el('dismissButton').addEventListener('click', async () => {
+    try {
+      if (activity?.completed) await bridge.request('/dismiss', { at: activity.completed.at });
+      suppressed = sig; expanded = false; bubble.style.display = 'none'; refit();
+    } catch (error) { showError(error); }
   });
-
-  // drag — the main process owns the motion: it follows the OS cursor position
-  // (screen.getCursorScreenPoint), which cannot be perturbed by our own window
-  // moving. The renderer only opens/closes the drag and keeps the window
-  // interactive for its whole duration (pointer capture guarantees we still get
-  // the pointerup even if the cursor leaves the window).
-  let drag = false;
-  img.addEventListener('pointerdown', (e) => {
-    if (e.button !== 0) return;
-    try { img.setPointerCapture(e.pointerId); } catch (err) {}
-    drag = true;
-    window.petBridge.setInteractive(true);
-    window.petBridge.dragStart();
-    e.preventDefault();
+  function toggleMenu() { const show = menu.style.display !== 'flex'; menu.style.display = show ? 'flex' : 'none'; img.setAttribute('aria-expanded', String(show)); if (show) el('menuRestore').focus(); }
+  img.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleMenu(); } });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') { menu.style.display = 'none'; expanded = false; img.focus(); render(); } });
+  img.addEventListener('contextmenu', event => { event.preventDefault(); toggleMenu(); });
+  img.addEventListener('dblclick', () => bridge.openSite());
+  img.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    pointer = { x: event.screenX, y: event.screenY, moved: false };
+    img.setPointerCapture(event.pointerId);
+    setInteractive(true);
   });
-  const endDrag = () => {
-    if (!drag) return;
-    drag = false;
-    window.petBridge.dragEnd();
-    window.petBridge.setInteractive(true); // pointer is still over the pet when a drag ends
-  };
-  window.addEventListener('pointerup', endDrag);
+  img.addEventListener('pointermove', event => {
+    if (!pointer || dragging) return;
+    if (Math.hypot(event.screenX - pointer.x, event.screenY - pointer.y) > 5) { pointer.moved = true; dragging = true; bridge.dragStart(); }
+  });
+  function endDrag() { if (dragging) bridge.dragEnd(); dragging = false; pointer = null; }
+  img.addEventListener('pointerup', () => { const clicked = pointer && !pointer.moved; endDrag(); if (clicked) toggleMenu(); });
   window.addEventListener('pointercancel', endDrag);
-  window.addEventListener('blur', endDrag); // alt-tab mid-drag must not leave the pet glued to the cursor
-
-  // hover -> interactive (so clicks work); leave -> click-through (never mid-drag)
-  root.addEventListener('mouseenter', () => window.petBridge.setInteractive(true));
-  root.addEventListener('mouseleave', () => {
-    if (!drag) window.petBridge.setInteractive(false);
+  window.addEventListener('blur', endDrag);
+  window.addEventListener('mousemove', event => {
+    if (dragging || pointer) return;
+    const target = document.elementFromPoint(event.clientX, event.clientY);
+    setInteractive(!!target?.closest('#img, #bubble, #menu'));
   });
-
-  // double-click (not a drag) -> return to DeepSeek Harness. A single click must
-  // stay inert: it fires on every stray click and on drags that barely move.
-  img.addEventListener('dblclick', () => window.petBridge.openSite(base));
-
-  // right-click menu
-  img.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-  });
-  document.getElementById('menuRestore').addEventListener('click', () => {
-    menu.style.display = 'none';
-    restoreBubble();
-  });
-  document.getElementById('menuSite').addEventListener('click', () => {
-    menu.style.display = 'none';
-    window.petBridge.openSite(base);
-  });
-  document.getElementById('menuHide').addEventListener('click', async () => {
-    menu.style.display = 'none';
-    await post('/desktop/hide');
-    window.close();
-  });
-
-  loadImage();
+  document.documentElement.addEventListener('mouseleave', () => { if (!dragging) setInteractive(false); });
+  img.addEventListener('wheel', event => {
+    if (!event.ctrlKey && !event.metaKey) return;
+    event.preventDefault();
+    scale = Math.min(2.5, Math.max(.5, Math.round((scale + (event.deltaY < 0 ? .1 : -.1)) * 10) / 10));
+    refit(); clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(async () => { try { await bridge.request('/scale', { scale }); } catch (error) { showError(error); } finally { resizeTimer = null; } }, 180);
+  }, { passive: false });
+  el('menuRestore').addEventListener('click', () => { suppressed = null; expanded = false; menu.style.display = 'none'; render(); });
+  el('menuSite').addEventListener('click', () => { menu.style.display = 'none'; bridge.openSite(); });
+  el('menuHide').addEventListener('click', async () => { try { await bridge.request('/desktop/hide', {}); window.close(); } catch (error) { showError(error); } });
+  document.addEventListener('pointerdown', event => { if (!event.target.closest('#img, #menu')) menu.style.display = 'none'; });
+  window.addEventListener('beforeunload', () => { stopped = true; clearTimeout(timer); clearTimeout(resizeTimer); endDrag(); img.onload = img.onerror = null; });
   tick();
-  setInterval(tick, 1200);
 })();

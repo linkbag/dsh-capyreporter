@@ -5,27 +5,39 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org/
-      - name: Syntax-check all modules
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run verify
+      - run: npm test
+      - run: npm pack --dry-run
+      - name: Check whether this version is already on npm
+        id: existing
         run: |
-          node --check lib/index.js
-          node --check lib/client.js
-          node --check runtime/electron-helper/main.js
-          node --check runtime/electron-helper/preload.js
-          node --check runtime/electron-helper/renderer.js
-      - name: Unit tests
-        run: npm test
-      - name: No UTF-8 BOM in package files
-        run: node scripts/check-bom.mjs
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "dsh-capyreporter@$VERSION" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish
+        # Skip instead of failing when no NPM_TOKEN is configured (the release
+        # still exists and can be re-published through workflow_dispatch), and
+        # never attempt to overwrite a version that is already on the registry.
+        if: env.NPM_TOKEN != '' && steps.existing.outputs.published == 'false'
         run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
