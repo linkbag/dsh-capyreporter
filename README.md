@@ -37,7 +37,7 @@ The page pet is hidden **only after** the desktop has decoded its image, fetched
 | Click, right-click, or Enter/Space on pet controls | Open controls |
 | Details / Collapse | Toggle scrollable session details |
 | Dismiss / Dismiss result | Always shown: hide the current bubble (new activity resurfaces it); after a run ends, acknowledge the result |
-| Drag the bubble's left edge, ←/→ on it, or Ctrl + wheel over the bubble | Resize the bubble, 260–560 px, remembered per browser |
+| Drag any bubble edge/corner, arrow keys on the corner handle, or Ctrl + wheel over the bubble | Resize the bubble (width 260–560, height 160–720 px), remembered per browser |
 | Mute 30 min | Silence the bubble for the configured duration (default 30 min) |
 | Restore bubble | Show current activity again and end a mute early |
 | Double-click desktop pet / Open DeepSeek Harness | Open the configured DSH origin |

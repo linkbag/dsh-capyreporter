@@ -34,7 +34,7 @@ DSH 版本需满足 [包的 peerDependencies](package.json)：`^0.1.1-rc.2 || >=
 | 单击、右击或 Enter/Space | 打开控制菜单 |
 | Details / Collapse | 展开或收起日志 |
 | 忽略 / Dismiss result | 始终显示：运行中隐藏当前气泡（新活动会再次出现）；结束后确认该结果 |
-| 拖动气泡左缘、其上按 ←/→，或 Ctrl + 滚轮 | 调整气泡宽度，260–560 像素，按浏览器记忆 |
+| 拖动气泡任一边缘/角落、在角落手柄上用方向键，或 Ctrl + 滚轮 | 调整气泡尺寸（宽 260–560、高 160–720 像素），按浏览器记忆 |
 | 静音 30 分钟 | 按配置时长静音气泡（默认 30 分钟） |
 | Restore bubble | 恢复显示，并提前结束静音 |
 | 双击桌面宠物 / Open DeepSeek Harness | 打开配置的 DSH origin |
