@@ -61,6 +61,11 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   const bubble = page.getByRole('region', { name: 'CapyReporter activity' })
   await bubble.waitFor()
   assert.equal(await bubble.getByText('🔧 ops_bash').count(), 0, 'tool chatter must not become the collapsed milestone')
+  const dismiss = bubble.getByRole('button', { name: 'Dismiss', exact: true })
+  await dismiss.waitFor()
+  await dismiss.click()
+  await bubble.waitFor({ state: 'hidden' })
+  assert.equal((await f.get('/state')).snoozed, false, 'dismissing a running bubble must hide it without muting')
   for (const text of ['Checking', ' ', 'the real browser']) f.emit('session/event', session, { type: 'assistant/chunk', data: { step: 1, chunk: { type: 'text-delta', text } } })
   await page.getByText('Checking the real browser', { exact: true }).waitFor()
   await bubble.getByRole('button', { name: 'Details', exact: true }).click()
@@ -136,6 +141,39 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   assert.equal(await page.locator('[data-plugin-css="dsh-capyreporter"]').count(), 0)
   assert.equal(await pet.count(), 0)
   assert.deepEqual(errors, [])
+})
+
+test('real Chromium: zh-CN locale localizes bubble, actions and settings', { timeout: 60_000 }, async t => {
+  const assets = await browserAssets()
+  const session = { id: 'zh', header: { cwd: 'C:/test-project' } }
+  const f = await fixture(t, { enabled: true }, {
+    sessions: { get: id => ({ ...session, id }) }, workspaceRegistry: { list: () => [{ path: 'C:/test-project', title: 'Audit project' }] },
+    sessionTitle: { get: () => ({ title: '翻译检查' }) },
+  }, (req, res) => { const asset = assets.get(req.url); res.writeHead(asset ? 200 : 404, { 'content-type': asset?.[0] || 'text/plain' }); res.end(asset?.[1] || 'Not found') })
+  const browser = await chromium.launch({ channel: process.env.DSH_TEST_BROWSER_CHANNEL || 'chrome', headless: true })
+  t.after(() => browser.close())
+  const context = await browser.newContext({ locale: 'zh-CN', viewport: { width: 1100, height: 900 }, reducedMotion: 'reduce' })
+  const page = await context.newPage()
+  await page.goto(f.base)
+  const pet = page.getByRole('button', { name: 'CapyReporter 控制；可拖动移动', exact: true })
+  await pet.waitFor()
+  const bubble = page.getByRole('region', { name: 'CapyReporter 动态' })
+  const agent = { id: 'zh', session }
+  f.emit('agent/status', { agent, status: 'running' })
+  f.emit('session/event', session, { type: 'assistant/chunk', data: { step: 1, chunk: { type: 'text-delta', text: '正在核对翻译' } } })
+  await bubble.waitFor()
+  await bubble.getByText(/1 个运行中 — Audit project · 翻译检查/).waitFor({ timeout: 8000 }).catch(async error => { console.error('zh diagnostics:', await page.evaluate(() => navigator.language), await page.locator('body').innerText(), await f.get('/activity')); throw error })
+  await bubble.getByRole('button', { name: '详情', exact: true }).waitFor()
+  await bubble.getByRole('button', { name: '忽略', exact: true }).click()
+  await bubble.waitFor({ state: 'hidden' })
+  assert.equal((await f.get('/state')).snoozed, false, '中文忽略同样只隐藏气泡，不得静音')
+  const settings = page.locator('.dsh-capy-section')
+  await settings.getByText('悬浮宠物', { exact: true }).waitFor()
+  await settings.getByText('状态气泡', { exact: true }).waitFor()
+  await settings.getByText('汇报思考过程', { exact: true }).waitFor()
+  await settings.getByRole('button', { name: '隐藏宠物', exact: true }).waitFor()
+  await page.evaluate(() => window.unmountPlugin())
+  assert.equal(await pet.count(), 0)
 })
 
 const electronPath = process.env.DSH_PET_ELECTRON_PATH || join(process.env.DSH_HOME || join(homedir(), '.dsh'), 'electron', process.platform === 'win32' ? 'electron.exe' : 'electron')

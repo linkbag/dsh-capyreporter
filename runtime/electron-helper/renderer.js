@@ -6,6 +6,38 @@
   let scale = 1, imageRevision = null, expanded = false, suppressed = null, activity = null, sig = null;
   let timer = null, resizeTimer = null, stopped = false, failures = 0, pointer = null, dragging = false, interactive = false;
   let snoozed = false, muteMinutes = 30;
+  const STRINGS = {
+    en: {
+      details: 'Details', collapse: 'Collapse', dismiss: 'Dismiss', dismissResult: 'Dismiss result',
+      muteFor: 'Mute {n} min', runEnded: 'Run ended', stillRunning: '{n} still running', runningHead: '⏳ {n} running — {title}',
+      disconnected: '⚠️ Reporter disconnected — retrying',
+      activityAria: 'CapyReporter activity', logAria: 'Session activity details', controlsAria: 'CapyReporter controls; drag to move', menuAria: 'CapyReporter controls',
+      restoreBubble: 'Restore bubble', openSite: 'Open DeepSeek Harness', usePagePet: 'Use page pet instead'
+    },
+    zh: {
+      details: '详情', collapse: '收起', dismiss: '忽略', dismissResult: '忽略结果',
+      muteFor: '静音 {n} 分钟', runEnded: '运行结束', stillRunning: '还有 {n} 个运行中', runningHead: '⏳ {n} 个运行中 — {title}',
+      disconnected: '⚠️ 报告器已断开 — 正在重试',
+      activityAria: 'CapyReporter 动态', logAria: '会话动态详情', controlsAria: 'CapyReporter 控制；可拖动移动', menuAria: 'CapyReporter 控制',
+      restoreBubble: '恢复气泡', openSite: '打开 DeepSeek Harness', usePagePet: '改用网页宠物'
+    }
+  };
+  const LOCALE = (navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  const t = (key, vars) => {
+    let value = STRINGS[LOCALE][key] || key;
+    if (vars) for (const [name, replacement] of Object.entries(vars)) value = value.split('{' + name + '}').join(String(replacement));
+    return value;
+  };
+  function applyI18n() {
+    bubble.setAttribute('aria-label', t('activityAria'));
+    log.setAttribute('aria-label', t('logAria'));
+    img.setAttribute('alt', t('controlsAria'));
+    menu.setAttribute('aria-label', t('menuAria'));
+    el('menuRestore').textContent = t('restoreBubble');
+    el('menuSite').textContent = t('openSite');
+    el('menuHide').textContent = t('usePagePet');
+  }
+  applyI18n();
   const fit = { w: 0, h: 0 };
   function setInteractive(value) { if (value !== interactive) { interactive = value; bridge.setInteractive(value); } }
   function refit() {
@@ -21,7 +53,7 @@
     if (fit.w !== w || fit.h !== h) { fit.w = w; fit.h = h; bridge.resize({ w, h: Math.max(100, h) }); }
   }
   function showError(error) {
-    head.textContent = '⚠️ Reporter disconnected — retrying';
+    head.textContent = '⚠️ ' + t('disconnected');
     detail.textContent = error.message;
     bubble.style.display = 'block';
     refit();
@@ -40,16 +72,17 @@
     const done = activity?.completed, running = activity?.running || [];
     sig = JSON.stringify([done?.at, ...running.map(row => [row.id, row.title, row.preview, row.lines?.at(-1)])]);
     if (suppressed === sig || snoozed || (!done && !running.length)) { bubble.style.display = 'none'; refit(); return; }
-    head.textContent = done ? (done.label || 'Run ended') + ' — ' + done.title + (running.length ? ' · ' + running.length + ' still running' : '') : '⏳ ' + running.length + ' running — ' + running[0].title;
+    head.textContent = done ? (done.label || t('runEnded')) + ' — ' + done.title + (running.length ? ' · ' + t('stillRunning', { n: running.length }) : '') : t('runningHead', { n: running.length, title: running[0].title });
     // Milestones only: the host already filters tool chatter out of preview.
     const row = running[0];
     detail.textContent = done?.preview || (row?.kind === 'think' ? '💭 ' + row.preview : row?.preview) || '';
     detail.style.display = expanded ? 'none' : 'block';
     log.classList.toggle('is-on', expanded);
     log.textContent = [...(done ? [done] : []), ...running].map(row => row.title + '\n' + (row.lines || []).join('\n') + (row.preview ? '\n' + row.preview : '')).join('\n\n');
-    el('detailsButton').textContent = expanded ? 'Collapse' : 'Details';
+    el('detailsButton').textContent = expanded ? t('collapse') : t('details');
     el('detailsButton').setAttribute('aria-expanded', String(expanded));
-    el('dismissButton').textContent = done ? 'Dismiss result' : 'Mute ' + muteMinutes + ' min';
+    el('dismissButton').textContent = done ? t('dismissResult') : t('dismiss');
+    el('muteButton').textContent = t('muteFor', { n: muteMinutes });
     bubble.style.display = 'block';
     refit();
   }
@@ -79,11 +112,16 @@
     }
   }
   el('detailsButton').addEventListener('click', () => { expanded = !expanded; render(); });
-  el('dismissButton').addEventListener('click', async () => {
+  el('dismissButton').addEventListener('click', () => {
+    // Dismiss is always available: it hides the current bubble; when a run has
+    // ended it also clears the result on the host.
+    if (activity?.completed) bridge.request('/dismiss', { at: activity.completed.at }).catch(showError);
+    suppressed = sig; expanded = false; bubble.style.display = 'none'; refit();
+  });
+  el('muteButton').addEventListener('click', async () => {
     try {
-      if (activity?.completed) await bridge.request('/dismiss', { at: activity.completed.at });
-      else { await bridge.request('/snooze', { minutes: muteMinutes }); snoozed = true; }
-      suppressed = sig; expanded = false; bubble.style.display = 'none'; refit();
+      await bridge.request('/snooze', { minutes: muteMinutes });
+      snoozed = true; suppressed = sig; expanded = false; bubble.style.display = 'none'; refit();
     } catch (error) { showError(error); }
   });
   function toggleMenu() { const show = menu.style.display !== 'flex'; menu.style.display = show ? 'flex' : 'none'; img.setAttribute('aria-expanded', String(show)); if (show) el('menuRestore').focus(); }

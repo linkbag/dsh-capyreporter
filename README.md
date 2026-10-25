@@ -36,14 +36,15 @@ The page pet is hidden **only after** the desktop has decoded its image, fetched
 | Ctrl / Cmd + wheel over the pet | Resize, 50–250% (ordinary scrolling remains available) |
 | Click, right-click, or Enter/Space on pet controls | Open controls |
 | Details / Collapse | Toggle scrollable session details |
-| Mute 30 min / Dismiss result | Silence the bubble for the configured duration (default 30 min) / acknowledge this result |
+| Dismiss / Dismiss result | Always shown: hide the current bubble (new activity resurfaces it); after a run ends, acknowledge the result |
+| Mute 30 min | Silence the bubble for the configured duration (default 30 min) |
 | Restore bubble | Show current activity again and end a mute early |
 | Double-click desktop pet / Open DeepSeek Harness | Open the configured DSH origin |
 | Escape | Close controls/details |
 
 ## Appearance and preferences
 
-Settings → **🐾 CapyReporter** controls visibility, desktop mode, size, artwork, notifications, the **Status bubble** mute duration (10/30/60/240 min, default 30) and **Report thinking** (opt-in 💭 reasoning as the live milestone, off by default). Artwork must be a PNG, at most **4 MiB**, with each side **1–4096 px**. SVG, arbitrary data URLs and malformed/truncated containers are rejected. Custom-to-custom changes invalidate the image revision immediately.
+Settings → **🐾 CapyReporter** controls visibility, desktop mode, size, artwork, notifications, the **Status bubble** mute duration (10/30/60/240 min, default 30) and **Report thinking** (opt-in 💭 reasoning as the live milestone, off by default). The UI follows your browser/OS language — English or Chinese (`zh*`); force one with `localStorage['dsh-capyreporter:lang'] = 'en' | 'zh'` and reload. Artwork must be a PNG, at most **4 MiB**, with each side **1–4096 px**. SVG, arbitrary data URLs and malformed/truncated containers are rejected. Custom-to-custom changes invalidate the image revision immediately.
 
 Image, size and toggles are saved atomically to `$DSH_HOME/capyreporter.json` (default `~/.dsh`). A legacy `homura-pet.json` is read only when that file is absent. Page position is stored separately in this browser's local storage; desktop position is session-only. Corrupt settings are logged, not silently replaced with unrelated legacy settings. Failed writes leave the previous preferences active.
 
