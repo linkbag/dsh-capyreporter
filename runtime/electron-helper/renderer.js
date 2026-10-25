@@ -48,7 +48,10 @@
     img.style.width = width + 'px';
     img.style.height = imageHeight + 'px';
     bubble.style.bottom = imageHeight + 8 + 'px';
-    const w = Math.max(200, width + 24, bubble.style.display === 'none' ? 0 : 384);
+    // Bubble tracks pet size: 360px at 100%, clamped to 260–560px.
+    const bubbleWidth = Math.max(260, Math.min(560, Math.round(360 * scale)));
+    bubble.style.width = bubbleWidth + 'px';
+    const w = Math.min(window.screen.availWidth, Math.max(200, width + 24, bubble.style.display === 'none' ? 0 : bubbleWidth + 24));
     const h = Math.min(1500, imageHeight + (bubble.style.display === 'none' ? 40 : Math.min(256, bubble.scrollHeight + 24)));
     if (fit.w !== w || fit.h !== h) { fit.w = w; fit.h = h; bridge.resize({ w, h: Math.max(100, h) }); }
   }
