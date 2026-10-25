@@ -18,8 +18,11 @@ test('manifest serves a browser half for the DSH 0.2.x loader', async () => {
   await access(join(root, manifest.dsh.bundle.patch))
 })
 
-test('peer metadata targets the installed DSH runtime without removed packages', () => {
-  assert.match(manifest.peerDependencies['@deepseek-ai/dsh'], />?=\s*0\.1\.2/)
+test('peer metadata stays installable without dragging the DSH suite into the lockfile', () => {
+  assert.equal(manifest.peerDependencies['@deepseek-ai/dsh'], undefined)
+  for (const name of Object.keys(manifest.peerDependencies)) {
+    assert.ok(!name.startsWith('@deepseek-ai/dsh'), 'peer ' + name + ' pulls the DSH peer closure into npm ci')
+  }
   assert.match(manifest.peerDependencies['@deepseek-ai/cordis'], /^(\^|>=)/)
   assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-client-runtime'], undefined)
   assert.ok(!manifest.dsh.client.inject.includes('@deepseek-ai/dsh-client-runtime'))
