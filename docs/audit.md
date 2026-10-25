@@ -4,6 +4,8 @@
 
 **Outcome:** implemented a reliability/security hardening pass and prepared the 0.1.6 release. The installed plugin copy was upgraded to 0.1.6 for testing with a backup of 0.1.5; the live DSH process still runs the old host code until restarted, and no user preference was reset. Version 0.1.6 has a dated changelog and release metadata ready for publication.
 
+**Follow-up (2026-10-25):** the audit findings carried into a UX pass — milestone-only bubble, opt-in thinking, 30-minute configurable mute, always-available Dismiss, English/Chinese localization, and a freely resizable bubble whose layout adapts (bottom-pinned actions, scrolling details, reset via double-click or the pet menu). Those changes ship as **0.1.8**; 0.1.7 was versioned but never published.
+
 ## Executive assessment
 
 The original 13 helper tests and bundle-shape check passed, but did not exercise real nested DSH events, HTTP policy, renderer lifecycle or a real browser. Live read-only evidence confirmed two material issues: unauthenticated reporter routes returned data while the DSH root required authentication, and actual activity lost tool names/text because fixtures used an invented flat event shape.

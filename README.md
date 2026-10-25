@@ -18,7 +18,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 dsh plugin --profile web add dsh-capyreporter
 ```
 
-Use a DSH version satisfying the [package peer dependencies](package.json) (`^0.1.1-rc.2 || >=0.1.2-0`); 0.1.7 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
+0.1.8 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). The only peer dependencies are `@deepseek-ai/cordis` and `react`, which DSH supplies to the plugin; no DSH package version range is pinned. Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
 
 ### Optional desktop companion
 

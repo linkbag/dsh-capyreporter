@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.1.7 (2026-10-25) — milestone-only bubble, thinking opt-in, snooze
+## 0.1.8 (2026-10-25) — milestone-only bubble, thinking opt-in, snooze, free resize
+
+_0.1.7 was versioned in the repository but never published to npm; 0.1.8 is the first release containing everything below._
 
 - **The bubble now shows assistant milestones only.** The collapsed line follows the assistant's latest statement (or the final result) and no longer falls back to the last tool line, so a run between tool calls stops flashing `🛠️ ops_bash`-style noise. The expanded Details view keeps the full bounded step log.
 - **Report thinking is a settings opt-in.** When enabled, the model's current reasoning becomes the live milestone with a 💭 prefix (row `kind: 'think'` on `/activity`); it resets at step/turn boundaries, completed previews still prefer final assistant text, and the same toggle turns it off. Default off — reasoning stays private.
