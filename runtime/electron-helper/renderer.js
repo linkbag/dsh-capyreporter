@@ -5,6 +5,7 @@
   const img = el('img'), bubble = el('bubble'), head = el('bubbleHead'), detail = el('bubbleDetail'), log = el('bubbleLog'), menu = el('menu');
   let scale = 1, imageRevision = null, expanded = false, suppressed = null, activity = null, sig = null;
   let timer = null, resizeTimer = null, stopped = false, failures = 0, pointer = null, dragging = false, interactive = false;
+  let snoozed = false, muteMinutes = 30;
   const fit = { w: 0, h: 0 };
   function setInteractive(value) { if (value !== interactive) { interactive = value; bridge.setInteractive(value); } }
   function refit() {
@@ -38,15 +39,17 @@
   function render() {
     const done = activity?.completed, running = activity?.running || [];
     sig = JSON.stringify([done?.at, ...running.map(row => [row.id, row.title, row.preview, row.lines?.at(-1)])]);
-    if (suppressed === sig || (!done && !running.length)) { bubble.style.display = 'none'; refit(); return; }
+    if (suppressed === sig || snoozed || (!done && !running.length)) { bubble.style.display = 'none'; refit(); return; }
     head.textContent = done ? (done.label || 'Run ended') + ' — ' + done.title + (running.length ? ' · ' + running.length + ' still running' : '') : '⏳ ' + running.length + ' running — ' + running[0].title;
-    detail.textContent = done?.preview || running[0]?.preview || running[0]?.lines?.at(-1) || '';
+    // Milestones only: the host already filters tool chatter out of preview.
+    const row = running[0];
+    detail.textContent = done?.preview || (row?.kind === 'think' ? '💭 ' + row.preview : row?.preview) || '';
     detail.style.display = expanded ? 'none' : 'block';
     log.classList.toggle('is-on', expanded);
     log.textContent = [...(done ? [done] : []), ...running].map(row => row.title + '\n' + (row.lines || []).join('\n') + (row.preview ? '\n' + row.preview : '')).join('\n\n');
     el('detailsButton').textContent = expanded ? 'Collapse' : 'Details';
     el('detailsButton').setAttribute('aria-expanded', String(expanded));
-    el('dismissButton').textContent = done ? 'Dismiss result' : 'Hide bubble';
+    el('dismissButton').textContent = done ? 'Dismiss result' : 'Mute ' + muteMinutes + ' min';
     bubble.style.display = 'block';
     refit();
   }
@@ -57,6 +60,8 @@
       // `desktop` is deliberately false until *we* finish bootstrap + heartbeat.
       if (!state.enabled || !state.desktopEnabled) { stopped = true; window.close(); return; }
       if (!resizeTimer && Number.isFinite(state.scale)) scale = state.scale;
+      snoozed = !!state.snoozed;
+      if (Number.isFinite(state.snoozeMinutes)) muteMinutes = state.snoozeMinutes;
       const revision = state.imageRevision ?? Number(state.hasCustom);
       if (imageRevision !== revision) await image(revision);
       activity = await bridge.request('/activity');
@@ -77,6 +82,7 @@
   el('dismissButton').addEventListener('click', async () => {
     try {
       if (activity?.completed) await bridge.request('/dismiss', { at: activity.completed.at });
+      else { await bridge.request('/snooze', { minutes: muteMinutes }); snoozed = true; }
       suppressed = sig; expanded = false; bubble.style.display = 'none'; refit();
     } catch (error) { showError(error); }
   });
@@ -112,7 +118,7 @@
     refit(); clearTimeout(resizeTimer);
     resizeTimer = setTimeout(async () => { try { await bridge.request('/scale', { scale }); } catch (error) { showError(error); } finally { resizeTimer = null; } }, 180);
   }, { passive: false });
-  el('menuRestore').addEventListener('click', () => { suppressed = null; expanded = false; menu.style.display = 'none'; render(); });
+  el('menuRestore').addEventListener('click', () => { suppressed = null; snoozed = false; expanded = false; menu.style.display = 'none'; bridge.request('/snooze', { minutes: 0 }).catch(() => {}); render(); });
   el('menuSite').addEventListener('click', () => { menu.style.display = 'none'; bridge.openSite(); });
   el('menuHide').addEventListener('click', async () => { try { await bridge.request('/desktop/hide', {}); window.close(); } catch (error) { showError(error); } });
   document.addEventListener('pointerdown', event => { if (!event.target.closest('#img, #menu')) menu.style.display = 'none'; });

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.7 (2026-10-25) — milestone-only bubble, thinking opt-in, snooze
+
+- **The bubble now shows assistant milestones only.** The collapsed line follows the assistant's latest statement (or the final result) and no longer falls back to the last tool line, so a run between tool calls stops flashing `🛠️ ops_bash`-style noise. The expanded Details view keeps the full bounded step log.
+- **Report thinking is a settings opt-in.** When enabled, the model's current reasoning becomes the live milestone with a 💭 prefix (row `kind: 'think'` on `/activity`); it resets at step/turn boundaries, completed previews still prefer final assistant text, and the same toggle turns it off. Default off — reasoning stays private.
+- **Mute the bubble for 30 minutes by default.** While a run is live the bubble's hide control becomes *Mute 30 min* (the pet menu offers the same), and a mute hides the bubble on both the page and the desktop companion until the timer lapses. *Restore bubble* ends a mute early; hiding the pet also clears it. Duration is configurable in settings (10/30/60/240 min, clamped 5–480 and persisted); the mute itself deliberately does not survive a restart.
+- Desktop companion matches the page: milestone-only detail (no tool-line fallback), 💭 thinking prefix, a *Mute* button while running that adopts the configured duration, hidden bubble while snoozed, and *Restore* unmutes.
+- Packaging/CI: regenerated `package-lock.json` — the 0.1.6 lock was missing the `@deepseek-ai/dsh` peer closure, so `npm ci` failed in GitHub Actions. Unit tests 54 → 58 (thinking gating, snooze/thinking routes and persistence).
+
 ## 0.1.6 (2026-10-19) — audit hardening + latest-DSH compatibility
 
 - Re-verified against DeepSeek Harness 0.2.1-alpha.1: `webServer` prefix routes, `slots.inject`/`register`, the combo client-bundle contract (`exports["./client"]`), and the `agent/status`, `agent/disposed`, `session/event`, `session/disposed` payloads still match. Removed the obsolete `@deepseek-ai/dsh-client-runtime` client inject/peer, added the `@deepseek-ai/dsh` peer, and bumped the version.

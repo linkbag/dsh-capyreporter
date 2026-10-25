@@ -6,10 +6,10 @@ DeepSeek Harness Web 的本地任务播报宠物：页面内悬浮水豚，以�
 
 ## 主要功能
 
-- 使用真实 DSH 事件显示工作区、会话、工具名称和简短回复预览；不展示推理内容、提示词、工具参数或工具输出。
+- 使用真实 DSH 事件显示工作区、会话和简短的**回复里程碑**预览：气泡默认跟随助手的最新表述，不会被工具调用刷屏。推理内容默认隐藏，可在设置中开启「Report thinking」后显示；提示词、工具参数和工具输出始终不会展示。
 - 区分成功、取消、失败、阻塞、输出上限和中断。仅进入 idle 不会误报成功。
 - 并行会话各自保留结果，启动另一个任务不会抹掉之前的结果。最多保留 20 条未读结果，六小时后过期。
-- 明确的「Details / Collapse」「Dismiss result / Hide bubble」按钮；键盘可操作，支持减少动态效果偏好。
+- 明确的「Details / Collapse」「Dismiss result」「Mute 30 min（可配置）」按钮；键盘可操作，支持减少动态效果偏好。
 - 离开页面时的通知默认关闭，需在插件设置中开启并获得浏览器授权。页面处于前台焦点时不通知；多个标签页仍可能分别发通知。
 - 桌面窗口只有在图片解码、读取活动并上报心跳后才会替代页面宠物。启动失败或失去心跳会恢复页面兜底。
 
@@ -19,7 +19,7 @@ DeepSeek Harness Web 的本地任务播报宠物：页面内悬浮水豚，以�
 dsh plugin --profile web add dsh-capyreporter
 ```
 
-DSH 版本需满足 [包的 peerDependencies](package.json)：`^0.1.1-rc.2 || >=0.1.2-0`。0.1.6 已重新验证 **DeepSeek Harness 0.2.1-alpha.1**（路由、slots、客户端 bundle 分发与 agent/session 事件）。客户端更新后刷新页面；**宿主代码更新需重新激活插件或重启 DSH，仅刷新不会替换已加载的宿主模块**。
+DSH 版本需满足 [包的 peerDependencies](package.json)：`^0.1.1-rc.2 || >=0.1.2-0`。0.1.7 已重新验证 **DeepSeek Harness 0.2.1-alpha.1**（路由、slots、客户端 bundle 分发与 agent/session 事件）。客户端更新后刷新页面；**宿主代码更新需重新激活插件或重启 DSH，仅刷新不会替换已加载的宿主模块**。
 
 桌面模式需自行安装 Electron。可用 `DSH_PET_ELECTRON_PATH` 或 `ELECTRON_PATH` 指定可执行文件，也会检查 `$DSH_HOME/electron/`、用户 npm 安装和常见 Windows 旧安装目录。不自动下载 Electron。macOS 建议显式指定可执行文件。
 
@@ -33,14 +33,14 @@ DSH 版本需满足 [包的 peerDependencies](package.json)：`^0.1.1-rc.2 || >=
 | Ctrl / Cmd + 滚轮 | 缩放，50–250%；普通滚轮不拦截 |
 | 单击、右击或 Enter/Space | 打开控制菜单 |
 | Details / Collapse | 展开或收起日志 |
-| Hide bubble / Dismiss result | 隐藏当前动态气泡 / 确认该结果 |
-| Restore bubble | 恢复显示 |
+| Mute 30 min / Dismiss result | 按配置时长静音气泡（默认 30 分钟）/ 确认该结果 |
+| Restore bubble | 恢复显示，并提前结束静音 |
 | 双击桌面宠物 / Open DeepSeek Harness | 打开配置的 DSH origin |
 | Escape | 关闭菜单和详情 |
 
 ## 设置与隐私
 
-设置 → **🐾 CapyReporter** 可控制显示、桌面模式、大小、图片和通知。图片仅支持 PNG，最多 **4 MiB**，每边 **1–4096 像素**。替换自定义图片时也会更新缓存版本。
+设置 → **🐾 CapyReporter** 可控制显示、桌面模式、大小、图片、通知、**Status bubble** 静音时长（10/30/60/240 分钟，默认 30）和 **Report thinking**（默认关闭；开启后以 💭 显示当前推理作为实时里程碑）。图片仅支持 PNG，最多 **4 MiB**，每边 **1–4096 像素**。替换自定义图片时也会更新缓存版本。
 
 开关、图片和大小原子保存到 `$DSH_HOME/capyreporter.json`（默认 `~/.dsh`）。只有该文件不存在时才读取旧 `homura-pet.json`；保存失败会保留之前的内存设置。页面位置单独存在浏览器 localStorage，桌面位置仅在本次运行内保留。
 

@@ -6,10 +6,10 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 
 ## What it reports
 
-- Live **workspace + session** labels, tool names, and a bounded assistant-text preview. Reasoning text, prompts, tool arguments and tool output are not displayed.
+- Live **workspace + session** labels and a bounded **assistant milestone** preview: the collapsed bubble follows the assistant's latest statement instead of tool chatter. Reasoning stays hidden unless you opt in to *Report thinking*; prompts, tool arguments and tool output are never displayed.
 - Separate **completed, cancelled, failed, blocked, interrupted and output-limit** outcomes, using actual DSH `turn/end` events. Idle alone is not success.
 - Independent unread results for parallel sessions: starting another session does not erase a result. Up to 20 results are retained in memory for six hours.
-- Compact headlines and explicit **Details / Dismiss result / Hide bubble** controls. Keyboard support and reduced-motion-safe styling.
+- Compact headlines and explicit **Details / Mute / Dismiss result** controls. Keyboard support and reduced-motion-safe styling.
 - Optional away notifications: off by default, require both the plugin toggle and browser permission, and do not notify a focused page. Different open DSH tabs may each notify.
 
 ## Install
@@ -18,7 +18,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 dsh plugin --profile web add dsh-capyreporter
 ```
 
-Use a DSH version satisfying the [package peer dependencies](package.json) (`^0.1.1-rc.2 || >=0.1.2-0`); 0.1.6 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
+Use a DSH version satisfying the [package peer dependencies](package.json) (`^0.1.1-rc.2 || >=0.1.2-0`); 0.1.7 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
 
 ### Optional desktop companion
 
@@ -36,14 +36,14 @@ The page pet is hidden **only after** the desktop has decoded its image, fetched
 | Ctrl / Cmd + wheel over the pet | Resize, 50–250% (ordinary scrolling remains available) |
 | Click, right-click, or Enter/Space on pet controls | Open controls |
 | Details / Collapse | Toggle scrollable session details |
-| Hide bubble / Dismiss result | Hide a live bubble until activity changes / acknowledge this result |
-| Restore bubble | Show current activity again |
+| Mute 30 min / Dismiss result | Silence the bubble for the configured duration (default 30 min) / acknowledge this result |
+| Restore bubble | Show current activity again and end a mute early |
 | Double-click desktop pet / Open DeepSeek Harness | Open the configured DSH origin |
 | Escape | Close controls/details |
 
 ## Appearance and preferences
 
-Settings → **🐾 CapyReporter** controls visibility, desktop mode, size, artwork and notifications. Artwork must be a PNG, at most **4 MiB**, with each side **1–4096 px**. SVG, arbitrary data URLs and malformed/truncated containers are rejected. Custom-to-custom changes invalidate the image revision immediately.
+Settings → **🐾 CapyReporter** controls visibility, desktop mode, size, artwork, notifications, the **Status bubble** mute duration (10/30/60/240 min, default 30) and **Report thinking** (opt-in 💭 reasoning as the live milestone, off by default). Artwork must be a PNG, at most **4 MiB**, with each side **1–4096 px**. SVG, arbitrary data URLs and malformed/truncated containers are rejected. Custom-to-custom changes invalidate the image revision immediately.
 
 Image, size and toggles are saved atomically to `$DSH_HOME/capyreporter.json` (default `~/.dsh`). A legacy `homura-pet.json` is read only when that file is absent. Page position is stored separately in this browser's local storage; desktop position is session-only. Corrupt settings are logged, not silently replaced with unrelated legacy settings. Failed writes leave the previous preferences active.
 
