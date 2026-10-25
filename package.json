@@ -47,7 +47,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test \"test/*.test.mjs\"",
+    "test": "node --test test/activity.test.mjs test/host-helpers.test.mjs test/host-routes.test.mjs test/manifest.test.mjs test/security.test.mjs",
     "verify": "node scripts/verify.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
     "prepack": "node scripts/check-bom.mjs"
