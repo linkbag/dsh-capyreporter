@@ -172,6 +172,17 @@ test('hot-activation seeds existing running agents without replaying idle sessio
   assert.equal((await f.get('/activity')).running[0].id, 'active')
   assert.equal((await f.get('/state')).desktop, false)
 })
+test('unsaved settings fall back to the documented defaults, including the desktop companion', async t => {
+  // Enabled stays off here so the default desktop request cannot spawn Electron in the suite;
+  // the explicit `undefined` keeps the fixture from writing a desktopEnabled value at all.
+  const f = await fixture(t, { enabled: false, desktopEnabled: undefined })
+  const state = await f.get('/state')
+  assert.equal(state.desktopEnabled, true, 'the desktop companion is requested when the setting was never saved')
+  assert.equal(state.notificationsEnabled, false, 'away notifications stay opt-in')
+  assert.equal(state.snoozeMinutes, 30, 'the mute duration defaults to thirty minutes')
+  assert.equal(state.showThinking, false, 'reasoning stays private until opted in')
+  assert.equal(state.language, 'auto', 'the interface follows the browser language')
+})
 test('plugin activations do not share running maps and disposal removes routes and subscriptions', async t => {
   const a = await fixture(t), b = await fixture(t)
   a.emit('agent/status', { agent: { id: 'only-a' }, status: 'running' })

@@ -7,7 +7,10 @@ import { apply } from '../../lib/index.js'
 
 export async function fixture(t, initial = {}, services = {}, fallback) {
   const home = await mkdtemp(join(tmpdir(), 'capyreporter-test-'))
-  const config = { enabled: true, desktopEnabled: false, customImage: null, scale: 1, ...initial }
+  // Tests default to a page-only pet so no suite accidentally spawns Electron; a test that
+  // wants the plugin's own default simply omits the key from `initial` and disables the pet.
+  const config = { enabled: true, customImage: null, scale: 1, ...initial }
+  if (!('desktopEnabled' in initial)) config.desktopEnabled = false
   await writeFile(join(home, 'capyreporter.json'), JSON.stringify(config))
   const subscriptions = new Map(), disposers = [], warnings = []
   let handler

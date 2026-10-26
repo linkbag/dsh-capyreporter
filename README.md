@@ -19,10 +19,11 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 dsh plugin --profile web add dsh-capyreporter
 ```
 
-0.1.8 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). The only peer dependencies are `@deepseek-ai/cordis` and `react`, which DSH supplies to the plugin; no DSH package version range is pinned. Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
+0.6.19 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). The only peer dependencies are `@deepseek-ai/cordis` and `react`, which DSH supplies to the plugin; no DSH package version range is pinned. Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
 
 ### Optional desktop companion
 
+Desktop mode is on by default: an install without saved preferences starts the always-on-top window, so the pet appears as a desktop overlay right away. The page pet stays visible until that window is healthy, and *Use page pet instead* turns it off.
 Use `DSH_PET_ELECTRON_PATH` (or `ELECTRON_PATH`) for an existing Electron executable. The plugin also checks `$DSH_HOME/electron/electron.exe` on Windows (`electron` on Linux), the user npm installation, and legacy Windows install locations. No binary is downloaded automatically. macOS should use an explicit executable path.
 
 The host's actual port is used automatically. `DSH_CAPYREP_BASE_URL` can override it with an exact loopback HTTP(S) origin, not a URL with credentials, paths or auth tokens. Remote/reverse-proxied origins are deliberately not supported by this plugin's local-only route boundary.

@@ -20,7 +20,9 @@ DeepSeek Harness Web 的本地任务播报宠物：页面内悬浮水豚，以�
 dsh plugin --profile web add dsh-capyreporter
 ```
 
-0.1.8 已重新验证 **DeepSeek Harness 0.2.1-alpha.1**（路由、slots、客户端 bundle 分发与 agent/session 事件）。peerDependencies 只有 `@deepseek-ai/cordis` 与 `react`（由 DSH 提供给插件），不再锁定任何 DSH 包版本范围。客户端更新后刷新页面；**宿主代码更新需重新激活插件或重启 DSH，仅刷新不会替换已加载的宿主模块**。
+0.6.19 已重新验证 **DeepSeek Harness 0.2.1-alpha.1**（路由、slots、客户端 bundle 分发与 agent/session 事件）。peerDependencies 只有 `@deepseek-ai/cordis` 与 `react`（由 DSH 提供给插件），不再锁定任何 DSH 包版本范围。客户端更新后刷新页面；**宿主代码更新需重新激活插件或重启 DSH，仅刷新不会替换已加载的宿主模块**。
+
+桌面模式默认开启：未保存偏好设置的新安装会直接启动置顶窗口，宠物即以桌面浮层出现。该窗口就绪前页面宠物保持可见；选择「仅用页面宠物」即可关闭。
 
 桌面模式需自行安装 Electron。可用 `DSH_PET_ELECTRON_PATH` 或 `ELECTRON_PATH` 指定可执行文件，也会检查 `$DSH_HOME/electron/`、用户 npm 安装和常见 Windows 旧安装目录。不自动下载 Electron。macOS 建议显式指定可执行文件。
 

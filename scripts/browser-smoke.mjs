@@ -128,6 +128,14 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   await settings.getByText('Status bubble', { exact: true }).waitFor()
   // Language switching is immediate, localized, persisted and drives RTL.
   const language = settings.locator('select', { has: page.locator('option[value="auto"]') })
+  // Native selects render an OS popup that ignores inherited colors; assert the plugin
+  // pins concrete option colors so the choices are never white-on-white in a dark theme.
+  const optionStyles = await language.evaluate(node => {
+    const option = node.querySelector('option')
+    const style = getComputedStyle(option)
+    return { color: style.color, background: style.backgroundColor }
+  })
+  assert.deepEqual(optionStyles, { color: 'rgb(34, 36, 44)', background: 'rgb(253, 253, 247)' }, 'select options keep readable colors')
   await language.selectOption('es')
   const bubbleEl = page.locator('.dsh-capy-bubble')
   await bubbleEl.getByRole('button', { name: 'Ir al chat', exact: true }).waitFor()
