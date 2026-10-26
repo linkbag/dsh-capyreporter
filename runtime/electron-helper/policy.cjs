@@ -2,7 +2,7 @@
 const { pathToFileURL } = require('node:url');
 const METHODS = Object.freeze({
   '/state': 'GET', '/activity': 'GET', '/image': 'GET',
-  '/desktop/heartbeat': 'POST', '/desktop/hide': 'POST', '/dismiss': 'POST', '/scale': 'POST', '/snooze': 'POST',
+  '/desktop/heartbeat': 'POST', '/desktop/hide': 'POST', '/desktop/navigate': 'POST', '/dismiss': 'POST', '/scale': 'POST', '/snooze': 'POST',
 });
 function origin(value) {
   const url = new URL(value);

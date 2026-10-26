@@ -74,7 +74,9 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   await settleWidth(startWidth + 16)
   assert.ok((await width()) > startWidth, 'ArrowLeft widens the bubble')
   await bubble.dispatchEvent('wheel', { deltaY: -120, ctrlKey: true, bubbles: true })
-  await page.waitForFunction(w => (document.querySelector('.dsh-capy-bubble')?.getBoundingClientRect().width || 0) > w, startWidth + 8)
+  // Wait for the wheel step to settle exactly; reading too early can observe the
+  // intermediate value and turn the next ArrowRight assertion into a 30 s flake.
+  await settleWidth(startWidth + 32)
   const widened = await width()
   assert.ok(widened > startWidth + 8, 'Ctrl+wheel over the bubble widens it')
   await corner.press('ArrowRight')
@@ -124,6 +126,26 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   await bubble.getByText(/1 running.*Parallel task/).waitFor()
   assert.equal((await f.get('/activity')).completed, null)
   await settings.getByText('Status bubble', { exact: true }).waitFor()
+  // Language switching is immediate, localized, persisted and drives RTL.
+  const language = settings.locator('select', { has: page.locator('option[value="auto"]') })
+  await language.selectOption('es')
+  const bubbleEl = page.locator('.dsh-capy-bubble')
+  await bubbleEl.getByRole('button', { name: 'Ir al chat', exact: true }).waitFor()
+  assert.equal(await page.evaluate(() => localStorage.getItem('dsh-capyreporter:lang')), 'es')
+  assert.equal(await bubbleEl.getAttribute('aria-label'), 'Actividad de CapyReporter')
+  await language.selectOption('ar')
+  await page.waitForFunction(() => document.querySelector('.dsh-capy-section')?.getAttribute('dir') === 'rtl')
+  await language.selectOption('en')
+  await bubbleEl.getByRole('button', { name: 'Go to chat', exact: true }).waitFor()
+  assert.equal(await bubbleEl.getAttribute('aria-label'), 'CapyReporter activity')
+  // The page half consumes a one-shot desktop navigation request.
+  await page.route('**/dsh-capyreporter/state', async route => {
+    const response = await route.fetch(), body = await response.json()
+    if (!body.navigate) body.navigate = { sessionId: 'second', at: Date.now() }
+    await route.fulfill({ response, json: body })
+  })
+  await page.waitForFunction(() => window.__CapyOpened === 'second', null, { timeout: 8000 })
+  await page.unroute('**/dsh-capyreporter/state')
   await bubble.getByRole('button', { name: 'Mute 30 min', exact: true }).click()
   await bubble.waitFor({ state: 'hidden' })
   assert.equal((await f.get('/state')).snoozed, true)
@@ -263,17 +285,24 @@ test('real host + Electron: spawn, capability readiness, hide/show and awaited d
 
 test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-size no drift and lost-host exit', { timeout: 60_000, skip: !existsSync(electronPath) && 'Set DSH_PET_ELECTRON_PATH to run native smoke coverage' }, async t => {
   const token = 'isolated-smoke-capability', artwork = await readFile(join(root, 'assets/capybara.png'))
-  let alive = true, heartbeat = 0, requested = [], heartbeatReady
+  let alive = true, heartbeat = 0, requested = [], navigated = [], heartbeatReady
   const ready = new Promise(resolve => { heartbeatReady = resolve })
-  const state = { enabled: true, desktopEnabled: true, desktop: false, scale: 1, hasCustom: false, imageRevision: 0 }
+  const state = { enabled: true, desktopEnabled: true, desktop: false, scale: 1, hasCustom: false, imageRevision: 0, language: 'de', snoozed: false, snoozeMinutes: 30 }
+  const activity = { running: [{ id: 'desk', title: 'Desktop session', kind: null, preview: null, lines: [] }], runningCount: 1, completed: null }
   const server = createServer((req, res) => {
     const role = authorize(req, server.address().port, token)
     requested.push(req.url)
     if (!role || !alive) { req.resume(); res.writeHead(role ? 503 : 403); return res.end('{}') }
     if (req.url === '/dsh-capyreporter/image') { res.writeHead(200, { 'content-type': 'image/png' }); return res.end(artwork) }
+    if (req.url.endsWith('/desktop/navigate')) {
+      let body = ''
+      req.on('data', chunk => { body += chunk })
+      req.on('end', () => { navigated.push(JSON.parse(body)); res.setHeader('content-type', 'application/json'); res.end('{"ok":true}') })
+      return
+    }
     req.resume(); res.setHeader('content-type', 'application/json')
     if (req.url.endsWith('/state')) res.end(JSON.stringify(state))
-    else if (req.url.endsWith('/activity')) res.end('{"running":[],"runningCount":0,"completed":null}')
+    else if (req.url.endsWith('/activity')) res.end(JSON.stringify(activity))
     else if (req.url.endsWith('/desktop/heartbeat')) { heartbeat++; heartbeatReady(); res.end('{"ok":true}') }
     else if (req.url.endsWith('/scale')) res.end('{"ok":true}')
     else { res.statusCode = 404; res.end('{}') }
@@ -303,6 +332,23 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   await page.locator('#img').focus(); await page.keyboard.press('Enter')
   await page.locator('#menu').waitFor({ state: 'visible' })
   await page.keyboard.press('Escape'); await page.locator('#menu').waitFor({ state: 'hidden' })
+  // Desktop parity: the companion follows the host language, resizes freely and
+  // can hand a session back to the browser page.
+  const chatButton = page.locator('#chatButton')
+  await chatButton.waitFor({ state: 'visible' })
+  assert.equal((await chatButton.textContent()).trim(), 'Zum Chat', 'desktop bubble follows the host language')
+  assert.equal(await page.locator('#bubble .rz').count(), 8, 'desktop bubble exposes every resize edge')
+  const grip = page.locator('#bubble .rz-se')
+  await grip.focus()
+  const bubbleWidth = () => page.locator('#bubble').evaluate(node => node.getBoundingClientRect().width)
+  const beforeResize = await bubbleWidth()
+  await grip.press('ArrowLeft')
+  await page.waitForFunction(width => document.getElementById('bubble').getBoundingClientRect().width > width + 8, beforeResize)
+  const grownBounds = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds())
+  assert.ok(grownBounds.width > bounds.width, 'resizing the desktop bubble grows the window')
+  await chatButton.click()
+  for (let i = 0; i < 40 && !navigated.length; i++) await page.waitForTimeout(50)
+  assert.deepEqual(navigated.at(-1), { sessionId: 'desk' }, 'Go to chat asks the page half to open the session')
   await page.screenshot({ path: join(reports, 'electron-smoke.png') })
   assert.ok(requested.every(path => path.startsWith('/dsh-capyreporter/')))
   assert.deepEqual(errors, [])

@@ -192,3 +192,19 @@ test('aborted upload does not mutate settings and server accepts subsequent requ
   await closed
   assert.equal((await f.get('/state')).hasCustom, false)
 })
+test('language setting round-trips only supported locales and persists', async t => {
+  const f = await fixture(t)
+  assert.equal((await f.get('/state')).language, 'auto')
+  for (const body of [{}, { language: 'xx' }, { language: 42 }, { language: 'EN' }, { language: null }]) assert.equal((await f.post('/language', body)).status, 400)
+  await f.post('/language', { language: 'de' })
+  assert.equal((await f.get('/state')).language, 'de')
+  assert.equal(JSON.parse(await readFile(join(f.home, 'capyreporter.json'), 'utf8')).language, 'de')
+  await f.post('/language', { language: 'auto' })
+  assert.equal((await f.get('/state')).language, 'auto')
+})
+test('desktop navigation stays helper-only and never surfaces as a page command by itself', async t => {
+  const f = await fixture(t)
+  assert.equal((await f.get('/state')).navigate, null)
+  assert.equal((await f.post('/desktop/navigate', { sessionId: 'a' })).status, 403)
+  assert.equal((await f.get('/state')).navigate, null)
+})

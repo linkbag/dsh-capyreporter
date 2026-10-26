@@ -63,6 +63,8 @@ test('Electron IPC only accepts the owned top-level local frame', () => {
 test('Electron request allowlist rejects arbitrary URLs, paths, verbs and large payloads', () => {
   assert.equal(policy.requestSpec('/state'), 'GET')
   assert.equal(policy.requestSpec('/scale', { scale: 1 }), 'POST')
+  assert.equal(policy.requestSpec('/desktop/navigate', { sessionId: 'a' }), 'POST')
+  assert.throws(() => policy.requestSpec('/language', { language: 'de' }), 'page settings stay outside the pet helper allowlist')
   for (const path of ['/enabled', '/reset', '/../../state', 'https://evil.example', '__proto__', 'constructor', null]) assert.throws(() => policy.requestSpec(path, {}))
   assert.throws(() => policy.requestSpec('/state', {}))
   assert.throws(() => policy.requestSpec('/scale', { value: 'x'.repeat(1024) }))

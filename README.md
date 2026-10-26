@@ -10,6 +10,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 - Separate **completed, cancelled, failed, blocked, interrupted and output-limit** outcomes, using actual DSH `turn/end` events. Idle alone is not success.
 - Independent unread results for parallel sessions: starting another session does not erase a result. Up to 20 results are retained in memory for six hours.
 - Compact headlines and explicit **Details / Go to chat / Mute / Dismiss result** controls. Keyboard support and reduced-motion-safe styling.
+- **Ten-language UI with a live switcher** (English, 中文, Español, हिन्दी, العربية, Português, Русский, 日本語, Français, Deutsch) that follows the browser/OS language by default, applies to the page pet and the desktop companion, and flips to right-to-left for Arabic.
 - Optional away notifications: off by default, require both the plugin toggle and browser permission, and do not notify a focused page. Different open DSH tabs may each notify.
 
 ## Install
@@ -39,6 +40,7 @@ The page pet is hidden **only after** the desktop has decoded its image, fetched
 | Go to chat | Open the session the headline refers to (running, else finished) in the current window via DSH workspace navigation; also in the pet menu |
 | Dismiss / Dismiss result | Always shown: hide the current bubble (new activity resurfaces it); after a run ends, acknowledge the result |
 | Drag any bubble edge/corner, arrow keys on the corner handle, or Ctrl + wheel over the bubble | Resize the bubble (width 260–560, height 160–720 px), remembered per browser; buttons stay pinned to the bottom edge and the details area scrolls when the bubble is short |
+| Drag any edge/corner of the desktop bubble | Resize the always-on-top bubble; its window follows so the pet stays anchored above the bubble |
 | Double-click a resize handle, or **Reset bubble size** in the pet menu | Restore the default 360 px width and content-driven height |
 | Mute 30 min | Silence the bubble for the configured duration (default 30 min) |
 | Restore bubble | Show current activity again and end a mute early |
@@ -47,7 +49,7 @@ The page pet is hidden **only after** the desktop has decoded its image, fetched
 
 ## Appearance and preferences
 
-Settings → **🐾 CapyReporter** controls visibility, desktop mode, size, artwork, notifications, the **Status bubble** mute duration (10/30/60/240 min, default 30) and **Report thinking** (opt-in 💭 reasoning as the live milestone, off by default). The UI follows your browser/OS language — English or Chinese (`zh*`); force one with `localStorage['dsh-capyreporter:lang'] = 'en' | 'zh'` and reload. Artwork must be a PNG, at most **4 MiB**, with each side **1–4096 px**. SVG, arbitrary data URLs and malformed/truncated containers are rejected. Custom-to-custom changes invalidate the image revision immediately.
+Settings → **🐾 CapyReporter** controls visibility, desktop mode, size, artwork, notifications, the **Status bubble** mute duration (10/30/60/240 min, default 30), **Report thinking** (opt-in 💭 reasoning as the live milestone, off by default) and the interface **Language** (Auto plus the ten supported locales; Arabic switches to RTL and the desktop companion follows). *Auto* tracks your browser/OS language and anything unsupported falls back to English; the choice persists on the host. Artwork must be a PNG, at most **4 MiB**, with each side **1–4096 px**. SVG, arbitrary data URLs and malformed/truncated containers are rejected. Custom-to-custom changes invalidate the image revision immediately.
 
 Image, size and toggles are saved atomically to `$DSH_HOME/capyreporter.json` (default `~/.dsh`). A legacy `homura-pet.json` is read only when that file is absent. Page position is stored separately in this browser's local storage; desktop position is session-only. Corrupt settings are logged, not silently replaced with unrelated legacy settings. Failed writes leave the previous preferences active.
 

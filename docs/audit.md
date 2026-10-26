@@ -4,7 +4,7 @@
 
 **Outcome:** implemented a reliability/security hardening pass and prepared the 0.1.6 release. The installed plugin copy was upgraded to 0.1.6 for testing with a backup of 0.1.5; the live DSH process still runs the old host code until restarted, and no user preference was reset. Version 0.1.6 has a dated changelog and release metadata ready for publication.
 
-**Follow-up (2026-10-25):** the audit findings carried into a UX pass — milestone-only bubble, opt-in thinking, 30-minute configurable mute, always-available Dismiss, English/Chinese localization, and a freely resizable bubble whose layout adapts (bottom-pinned actions, scrolling details, reset via double-click or the pet menu). Those changes ship as **0.1.8**; 0.1.7 was versioned but never published.
+**Follow-up (2026-10-25):** the audit findings carried into a UX pass — milestone-only bubble, opt-in thinking, 30-minute configurable mute, always-available Dismiss, a freely resizable bubble whose layout adapts (bottom-pinned actions, scrolling details, reset via double-click or the pet menu), *Go to chat* via `uiWorkspace.openSession`, ten-language localization with an in-chat switcher (RTL for Arabic), and desktop parity (freely resizable companion bubble and a helper-only `/desktop/navigate` hand-off the page consumes once). Those changes ship as **0.1.8**; 0.1.7 was versioned but never published.
 
 ## Executive assessment
 
@@ -87,7 +87,7 @@ Re-checked the shipped interfaces against the installed `@deepseek-ai` **0.2.1-a
 
 Defects found by this pass and fixed in **0.1.6**: background-tab polling (and therefore away notifications) could stall for minutes; the desktop helper never re-anchored after display changes, leaving no visible pet while the host reported desktop ready; the size slider lost keyboard focus after one step; a strict referrer policy would have blocked every poll; and a cold Electron start could be killed by a 20 s watchdog. Tests now also assert the manifest contract, slot metadata and the same-origin fetch-metadata path.
 
-Known test gaps: the real DSH boot path (cookie gate, combo batch, `__DSH_BOOT__`) is not exercised by the fixture; click-through is OS-level and needs the manual checklist; notifications are not automatable headless.
+Known test gaps: the real DSH boot path (cookie gate, combo batch, `__DSH_BOOT__`) is not exercised by the fixture; click-through is OS-level and needs the manual checklist; notifications are not automatable headless. The desktop→page navigation hand-off is covered by two halves rather than one live pair: the Electron smoke asserts the helper posts `/desktop/navigate`, and the Chromium smoke injects a one-shot `state.navigate` to prove the page consumes it and calls `uiWorkspace.openSession`.
 
 ## Remaining risks / follow-up priorities
 
