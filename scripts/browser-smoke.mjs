@@ -17,7 +17,8 @@ const reports = join(root, 'reports')
 await mkdir(reports, { recursive: true })
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Isolated CapyReporter UI test</title></head><body style="font:14px system-ui;margin:24px;max-width:900px"><h1>CapyReporter integration fixture</h1><div id="app"></div><script src="/react.js"></script><script src="/react-dom.js"></script><script>
 const registered={}, meta={}, cleanup=[];
-const ctx={effect(f){cleanup.push(f())},slots:{inject(_n,f){const r=f();if(r&&typeof r[Symbol.iterator]==='function')for(const d of r)cleanup.push(d)},register(m,component){if(!m||!m.name||!m.id)throw Error('bad slot registration');registered[m.id]=component;meta[m.id]=m}}};
+const ctx={effect(f){cleanup.push(f())},get(name){return name==='uiWorkspace'?(window.__CapyUi||undefined):undefined},slots:{inject(_n,f){const r=f();if(r&&typeof r[Symbol.iterator]==='function')for(const d of r)cleanup.push(d)},register(m,component){if(!m||!m.name||!m.id)throw Error('bad slot registration');registered[m.id]=component;meta[m.id]=m}}};
+window.__CapyUi={openSession(id){window.__CapyOpened=id}};
 window.__CapySlots=meta;
 window.__ModuleLoader__={load({factory}){factory(n=>{if(n==='react')return React;throw Error(n)}).apply(ctx);const root=ReactDOM.createRoot(document.getElementById('app'));root.render(React.createElement(React.Fragment,null,...Object.values(registered).map((C,i)=>React.createElement(C,{key:i}))));window.unmountPlugin=()=>{root.unmount();cleanup.reverse().forEach(f=>f&&f())}}};
 </script><script src="/client.js"></script></body></html>`
@@ -61,6 +62,8 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   const bubble = page.getByRole('region', { name: 'CapyReporter activity' })
   await bubble.waitFor()
   assert.equal(await bubble.getByText('🔧 ops_bash').count(), 0, 'tool chatter must not become the collapsed milestone')
+  await bubble.getByRole('button', { name: 'Go to chat', exact: true }).click()
+  assert.equal(await page.evaluate(() => window.__CapyOpened), 'first', 'Go to chat opens the running session shown in the bubble')
   const width = () => bubble.evaluate(el => el.getBoundingClientRect().width)
   const height = () => bubble.evaluate(el => el.getBoundingClientRect().height)
   const corner = bubble.getByRole('separator', { name: 'Resize bubble (pixels)' })
@@ -216,6 +219,8 @@ test('real Chromium: zh-CN locale localizes bubble, actions and settings', { tim
   await bubble.waitFor()
   await bubble.getByText(/1 个运行中 — Audit project · 翻译检查/).waitFor({ timeout: 8000 }).catch(async error => { console.error('zh diagnostics:', await page.evaluate(() => navigator.language), await page.locator('body').innerText(), await f.get('/activity')); throw error })
   await bubble.getByRole('button', { name: '详情', exact: true }).waitFor()
+  await bubble.getByRole('button', { name: '转到会话', exact: true }).click()
+  assert.equal(await page.evaluate(() => window.__CapyOpened), 'zh', '中文界面同样能转到对应会话')
   await bubble.getByRole('button', { name: '忽略', exact: true }).click()
   await bubble.waitFor({ state: 'hidden' })
   assert.equal((await f.get('/state')).snoozed, false, '中文忽略同样只隐藏气泡，不得静音')

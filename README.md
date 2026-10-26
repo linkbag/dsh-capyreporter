@@ -9,7 +9,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 - Live **workspace + session** labels and a bounded **assistant milestone** preview: the collapsed bubble follows the assistant's latest statement instead of tool chatter. Reasoning stays hidden unless you opt in to *Report thinking*; prompts, tool arguments and tool output are never displayed.
 - Separate **completed, cancelled, failed, blocked, interrupted and output-limit** outcomes, using actual DSH `turn/end` events. Idle alone is not success.
 - Independent unread results for parallel sessions: starting another session does not erase a result. Up to 20 results are retained in memory for six hours.
-- Compact headlines and explicit **Details / Mute / Dismiss result** controls. Keyboard support and reduced-motion-safe styling.
+- Compact headlines and explicit **Details / Go to chat / Mute / Dismiss result** controls. Keyboard support and reduced-motion-safe styling.
 - Optional away notifications: off by default, require both the plugin toggle and browser permission, and do not notify a focused page. Different open DSH tabs may each notify.
 
 ## Install
@@ -36,6 +36,7 @@ The page pet is hidden **only after** the desktop has decoded its image, fetched
 | Ctrl / Cmd + wheel over the pet | Resize, 50–250% (ordinary scrolling remains available) |
 | Click, right-click, or Enter/Space on pet controls | Open controls |
 | Details / Collapse | Toggle scrollable session details |
+| Go to chat | Open the session the headline refers to (running, else finished) in the current window via DSH workspace navigation; also in the pet menu |
 | Dismiss / Dismiss result | Always shown: hide the current bubble (new activity resurfaces it); after a run ends, acknowledge the result |
 | Drag any bubble edge/corner, arrow keys on the corner handle, or Ctrl + wheel over the bubble | Resize the bubble (width 260–560, height 160–720 px), remembered per browser; buttons stay pinned to the bottom edge and the details area scrolls when the bubble is short |
 | Double-click a resize handle, or **Reset bubble size** in the pet menu | Restore the default 360 px width and content-driven height |
