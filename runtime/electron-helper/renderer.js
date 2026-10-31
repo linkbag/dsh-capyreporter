@@ -14,6 +14,7 @@
     en: {
       details: 'Details', collapse: 'Collapse', dismiss: 'Dismiss', dismissResult: 'Dismiss result', goToChat: 'Go to chat',
       muteFor: 'Mute {n} min', runEnded: 'Run ended', stillRunning: '{n} still running', runningHead: '⏳ {n} running — {title}',
+      runningHeadSubs: '⏳ {n} running · {subs} — {title}', subagentOne: '1 subagent', subagents: '{n} subagents', subagentActiveOne: '🤖 1 subagent running', subagentActive: '🤖 {n} subagents running',
       subagentFinished: '✅ Subagent finished',
       subagentFailed: '⚠️ Subagent failed',
       subagentCancelled: '⏹ Subagent cancelled',
@@ -25,6 +26,7 @@
     zh: {
       details: '详情', collapse: '收起', dismiss: '忽略', dismissResult: '忽略结果', goToChat: '转到会话',
       muteFor: '静音 {n} 分钟', runEnded: '运行结束', stillRunning: '还有 {n} 个运行中', runningHead: '⏳ {n} 个运行中 — {title}',
+      runningHeadSubs: '⏳ {n} 个运行中 · {subs} — {title}', subagentOne: '1 个子代理', subagents: '{n} 个子代理', subagentActiveOne: '🤖 1 个子代理运行中', subagentActive: '🤖 {n} 个子代理运行中',
       subagentFinished: '✅ 子智能体已完成',
       subagentFailed: '⚠️ 子智能体失败',
       subagentCancelled: '⏹ 子智能体已取消',
@@ -36,6 +38,7 @@
     es: {
       details: 'Detalles', collapse: 'Contraer', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir al chat',
       muteFor: 'Silenciar {n} min', runEnded: 'Ejecución finalizada', stillRunning: '{n} aún en ejecución', runningHead: '⏳ {n} en ejecución — {title}',
+      runningHeadSubs: '⏳ {n} en ejecución · {subs} — {title}', subagentOne: '1 subagente', subagents: '{n} subagentes', subagentActiveOne: '🤖 1 subagente en ejecución', subagentActive: '🤖 {n} subagentes en ejecución',
       subagentFinished: '✅ Subagente finalizado',
       subagentFailed: '⚠️ Subagente falló',
       subagentCancelled: '⏹ Subagente cancelado',
@@ -47,6 +50,7 @@
     hi: {
       details: 'विवरण', collapse: 'छोटा करें', dismiss: 'खारिज करें', dismissResult: 'परिणाम खारिज करें', goToChat: 'चैट पर जाएँ',
       muteFor: '{n} मिनट म्यूट करें', runEnded: 'रन पूरा हुआ', stillRunning: '{n} अभी चल रहे हैं', runningHead: '⏳ {n} चल रहे हैं — {title}',
+      runningHeadSubs: '⏳ {n} चल रहे हैं · {subs} — {title}', subagentOne: '1 सबएजेंट', subagents: '{n} सबएजेंट', subagentActiveOne: '🤖 1 सबएजेंट चल रहा है', subagentActive: '🤖 {n} सबएजेंट चल रहे हैं',
       subagentFinished: '✅ सबएजेंट पूर्ण',
       subagentFailed: '⚠️ सबएजेंट विफल',
       subagentCancelled: '⏹ सबएजेंट रद्द',
@@ -58,6 +62,7 @@
     ar: {
       details: 'التفاصيل', collapse: 'طيّ', dismiss: 'تجاهل', dismissResult: 'تجاهل النتيجة', goToChat: 'الانتقال إلى المحادثة',
       muteFor: 'كتم {n} دقيقة', runEnded: 'انتهى التشغيل', stillRunning: '{n} قيد التشغيل', runningHead: '⏳ {n} قيد التشغيل — {title}',
+      runningHeadSubs: '⏳ {n} قيد التشغيل · {subs} — {title}', subagentOne: 'وكيل فرعي واحد', subagents: 'وكلاء فرعيون: {n}', subagentActiveOne: '🤖 وكيل فرعي واحد قيد التشغيل', subagentActive: '🤖 وكلاء فرعيون قيد التشغيل: {n}',
       subagentFinished: '✅ اكتمل الوكيل الفرعي',
       subagentFailed: '⚠️ فشل الوكيل الفرعي',
       subagentCancelled: '⏹ أُلغي الوكيل الفرعي',
@@ -69,6 +74,7 @@
     pt: {
       details: 'Detalhes', collapse: 'Recolher', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir para o chat',
       muteFor: 'Silenciar {n} min', runEnded: 'Execução concluída', stillRunning: '{n} ainda em execução', runningHead: '⏳ {n} em execução — {title}',
+      runningHeadSubs: '⏳ {n} em execução · {subs} — {title}', subagentOne: '1 subagente', subagents: '{n} subagentes', subagentActiveOne: '🤖 1 subagente em execução', subagentActive: '🤖 {n} subagentes em execução',
       subagentFinished: '✅ Subagente concluído',
       subagentFailed: '⚠️ Subagente falhou',
       subagentCancelled: '⏹ Subagente cancelado',
@@ -80,6 +86,7 @@
     ru: {
       details: 'Подробности', collapse: 'Свернуть', dismiss: 'Скрыть', dismissResult: 'Скрыть результат', goToChat: 'Перейти в чат',
       muteFor: 'Без звука {n} мин', runEnded: 'Запуск завершён', stillRunning: 'ещё выполняется: {n}', runningHead: '⏳ выполняется: {n} — {title}',
+      runningHeadSubs: '⏳ выполняется: {n} · {subs} — {title}', subagentOne: '1 субагент', subagents: 'субагентов: {n}', subagentActiveOne: '🤖 субагент выполняется: 1', subagentActive: '🤖 субагентов выполняется: {n}',
       subagentFinished: '✅ Субагент завершён',
       subagentFailed: '⚠️ Субагент завершился с ошибкой',
       subagentCancelled: '⏹ Субагент отменён',
@@ -91,6 +98,7 @@
     ja: {
       details: '詳細', collapse: '折りたたむ', dismiss: '閉じる', dismissResult: '結果を閉じる', goToChat: 'チャットへ',
       muteFor: '{n} 分ミュート', runEnded: '実行終了', stillRunning: '実行中 {n} 件', runningHead: '⏳ 実行中 {n} 件 — {title}',
+      runningHeadSubs: '⏳ 実行中 {n} 件 · {subs} — {title}', subagentOne: 'サブエージェント 1 件', subagents: 'サブエージェント {n} 件', subagentActiveOne: '🤖 サブエージェント 1 件実行中', subagentActive: '🤖 サブエージェント {n} 件実行中',
       subagentFinished: '✅ サブエージェント完了',
       subagentFailed: '⚠️ サブエージェント失敗',
       subagentCancelled: '⏹ サブエージェント中止',
@@ -102,6 +110,7 @@
     fr: {
       details: 'Détails', collapse: 'Réduire', dismiss: 'Masquer', dismissResult: 'Masquer le résultat', goToChat: 'Aller au chat',
       muteFor: 'Silence {n} min', runEnded: 'Exécution terminée', stillRunning: '{n} encore en cours', runningHead: '⏳ {n} en cours — {title}',
+      runningHeadSubs: '⏳ {n} en cours · {subs} — {title}', subagentOne: '1 sous-agent', subagents: '{n} sous-agents', subagentActiveOne: '🤖 1 sous-agent en cours', subagentActive: '🤖 {n} sous-agents en cours',
       subagentFinished: '✅ Sous-agent terminé',
       subagentFailed: '⚠️ Échec du sous-agent',
       subagentCancelled: '⏹ Sous-agent annulé',
@@ -113,6 +122,7 @@
     de: {
       details: 'Details', collapse: 'Einklappen', dismiss: 'Ausblenden', dismissResult: 'Ergebnis ausblenden', goToChat: 'Zum Chat',
       muteFor: '{n} Min. stumm', runEnded: 'Lauf beendet', stillRunning: '{n} laufen noch', runningHead: '⏳ {n} laufen — {title}',
+      runningHeadSubs: '⏳ {n} laufen · {subs} — {title}', subagentOne: '1 Subagent', subagents: '{n} Subagenten', subagentActiveOne: '🤖 1 Subagent läuft', subagentActive: '🤖 {n} Subagenten laufen',
       subagentFinished: '✅ Subagent fertig',
       subagentFailed: '⚠️ Subagent fehlgeschlagen',
       subagentCancelled: '⏹ Subagent abgebrochen',
@@ -200,21 +210,26 @@
     const key = item.outcome === 'completed' ? 'subagentFinished' : item.outcome === 'error' ? 'subagentFailed' : 'subagentCancelled';
     return t(key) + (item.title ? ' · ' + item.title : '');
   }
+  const subagentCountLabel = n => n === 1 ? t('subagentOne') : t('subagents', { n });
+  const subagentActiveLabel = n => n === 1 ? t('subagentActiveOne', { n }) : t('subagentActive', { n });
   function render() {
     const done = activity?.completed, running = activity?.running || [];
-    const roots = activity?.runningCount || 0, progress = activity?.progress || [];
-    sig = JSON.stringify([done?.at, roots, activity?.subagentCount, progress.at(-1)?.at, ...running.map(row => [row.id, row.title, row.preview, row.lines?.at(-1)])]);
+    const roots = activity?.runningCount || 0, subagents = activity?.subagentCount || 0, progress = activity?.progress || [];
+    sig = JSON.stringify([done?.at, roots, subagents, progress.at(-1)?.at, ...running.map(row => [row.id, row.title, row.preview, row.lines?.at(-1)])]);
     if (suppressed === sig || snoozed || (!done && !running.length)) { bubble.style.display = 'none'; refit(); return; }
     if (done && !roots) {
       head.textContent = (done.label || t('runEnded')) + ' — ' + done.title + (running.length ? ' · ' + t('stillRunning', { n: running.length }) : '');
     } else if (roots || running.length) {
       const liveRow = running.find(entry => !entry.subagent) || running[0];
-      head.textContent = t('runningHead', { n: roots || running.length, title: liveRow.title });
+      head.textContent = subagents
+        ? t('runningHeadSubs', { n: roots || running.length, subs: subagentCountLabel(subagents), title: liveRow.title })
+        : t('runningHead', { n: roots || running.length, title: liveRow.title });
     }
     // Milestones only: the host already filters tool chatter out of preview.
     const latest = progress.at(-1), live = roots ? running.find(entry => !entry.subagent) : running[0];
     const liveMilestone = live ? (live.kind === 'think' ? '💭 ' + live.preview : live.preview) : null;
-    detail.textContent = liveMilestone || (latest ? progressLine(latest) : null) || done?.preview || '';
+    const subactive = subagents ? subagentActiveLabel(subagents) : null;
+    detail.textContent = liveMilestone || subactive || (latest ? progressLine(latest) : null) || done?.preview || '';
     detail.style.display = expanded ? 'none' : 'block';
     log.classList.toggle('is-on', expanded);
     log.textContent = [...(done ? [done] : []), ...running, ...progress.slice(-6).map(item => ({ title: progressLine(item), lines: [], preview: null }))]

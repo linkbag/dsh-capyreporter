@@ -8,6 +8,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 
 - Live **workspace + session** labels and a bounded **assistant milestone** preview: the collapsed bubble follows the assistant's latest statement instead of tool chatter. Reasoning stays hidden unless you opt in to *Report thinking*; prompts, tool arguments and tool output are never displayed.
 - Separate **completed, cancelled, failed, blocked, interrupted and output-limit** outcomes, using actual DSH `turn/end` events. Idle alone is not success.
+- **Running subagents are visible while they work.** The headline names them (`⏳ 1 running · 2 subagents — <chat>`) and, while the main chat has no fresh assistant text, the collapsed detail reads `🤖 2 subagents running`; the count drops as they finish and their progress milestones take over. Localized throughout.
 - **Only the main chat claims a finished turn.** Delegated subagent runs never raise the green *Turn complete* tick for the parent chat: while a main chat is running the headline keeps showing it, and delegated finishes (`✅ Subagent finished`, `⚠️ Subagent failed`, `⏹ Subagent cancelled`) appear as progress milestones in the details. A main-chat result may only take the headline once no main chat is running.
 - Independent unread results for parallel sessions: starting another session does not erase a result. Up to 20 results are retained in memory for six hours.
 - Compact headlines and explicit **Details / Go to chat / Mute / Dismiss result** controls. Keyboard support and reduced-motion-safe styling.

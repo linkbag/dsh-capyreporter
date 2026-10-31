@@ -133,7 +133,12 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   assert.equal((await f.get('/activity')).completed, null)
   // A delegated session finishing never claims the whole chat completed; it is
   // reported as a milestone inside the still-running parent chat.
+  await bubble.getByRole('button', { name: 'Collapse', exact: true }).click()
   f.emit('agent/status', { agent: { id: 'child', session: child }, status: 'running' })
+  await bubble.getByText(/1 running · 1 subagent —/).waitFor()
+  assert.equal(await bubble.locator('.dsh-capy-head').getByText(/1 subagent/).count(), 1, 'a running delegated agent appears in the headline')
+  assert.equal(await bubble.getByText('🤖 1 subagent running').count(), 1, 'the collapsed detail names the running delegated agent')
+  await bubble.getByRole('button', { name: 'Details', exact: true }).click()
   f.emit('agent/status', { agent: { id: 'child', session: child }, status: 'idle' })
   await bubble.getByText(/1 running.*Parallel task/).waitFor()
   assert.equal(await bubble.getByText(/Turn complete/).count(), 0, 'a delegated finish must not claim the chat completed')
@@ -347,7 +352,7 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   await page.waitForFunction(() => document.getElementById('img').style.height !== '')
   await Promise.race([ready, new Promise((_, reject) => setTimeout(() => reject(new Error('Desktop heartbeat missing')), 8000).unref())]).catch(async error => { console.error('Desktop diagnostics:', errors, requested, await page.locator('body').innerText()); throw error })
   assert.ok(heartbeat > 0, 'desktop readiness follows image decode and activity bootstrap')
-  assert.equal((await page.locator('#bubbleHead').textContent()).trim(), '⏳ 1 laufen — Desktop session', 'a delegated finish never replaces the running chat head')
+  assert.equal((await page.locator('#bubbleHead').textContent()).trim(), '⏳ 1 laufen · 1 Subagent — Desktop session', 'a running delegated agent is named in the head and never ends the chat')
   const preferences = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences())
   assert.equal(preferences.sandbox, true); assert.equal(preferences.contextIsolation, true); assert.equal(preferences.nodeIntegration, false)
   assert.equal(await page.evaluate(() => typeof window.require), 'undefined')
