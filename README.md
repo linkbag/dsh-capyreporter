@@ -25,12 +25,12 @@ dsh plugin --profile web add dsh-capyreporter
 
 ### Optional desktop companion
 
-Desktop mode is on by default: an install without saved preferences starts the always-on-top window, so the pet appears as a desktop overlay right away. The page pet stays visible until that window is healthy, and *Use page pet instead* turns it off.
+The always-on-top pet is on by default: an install without saved preferences starts the companion right away, so the pet floats above other windows. *Use page pet* turns it off; *Retry always-on-top pet* restarts it after a failed start.
 Use `DSH_PET_ELECTRON_PATH` (or `ELECTRON_PATH`) for an existing Electron executable. The plugin also checks `$DSH_HOME/electron/electron.exe` on Windows (`electron` on Linux), the user npm installation, and legacy Windows install locations. No binary is downloaded automatically. macOS should use an explicit executable path.
 
 The host's actual port is used automatically. `DSH_CAPYREP_BASE_URL` can override it with an exact loopback HTTP(S) origin, not a URL with credentials, paths or auth tokens. Remote/reverse-proxied origins are deliberately not supported by this plugin's local-only route boundary.
 
-The page pet is hidden **only after** the desktop has decoded its image, fetched activity, and reported healthy. Missing Electron, a failed renderer, or a stale heartbeat keeps/restores the page fallback. Some exclusive fullscreen applications can still cover a topmost window. Empty window background is click-through; the artwork element and bubble are interactive rectangles.
+The page pet is hidden **only after** the companion has decoded its image, fetched activity, and reported ready. Missing Electron, a failed renderer, or a stale heartbeat keeps/restores the page fallback. Some exclusive fullscreen applications can still cover a topmost window. Empty window background is click-through; the artwork element and bubble are interactive rectangles.
 
 ## Controls
 
@@ -52,7 +52,7 @@ The page pet is hidden **only after** the desktop has decoded its image, fetched
 
 ## Appearance and preferences
 
-Settings → **🐾 CapyReporter** controls visibility, desktop mode, size, artwork, notifications, the **Status bubble** mute duration (10/30/60/240 min, default 30), **Report thinking** (opt-in 💭 reasoning as the live milestone, off by default) and the interface **Language** (Auto plus the ten supported locales; Arabic switches to RTL and the desktop companion follows). *Auto* tracks your browser/OS language and anything unsupported falls back to English; the choice persists on the host. Artwork must be a PNG, at most **4 MiB**, with each side **1–4096 px**. SVG, arbitrary data URLs and malformed/truncated containers are rejected. Custom-to-custom changes invalidate the image revision immediately.
+Settings → **🐾 CapyReporter** controls visibility, the always-on-top pet, size, artwork, notifications, the **Status bubble** mute duration (10/30/60/240 min, default 30), **Report thinking** (opt-in 💭 reasoning as the live milestone, off by default) and the interface **Language** (Auto plus the ten supported locales; Arabic switches to RTL and the desktop companion follows). *Auto* tracks your browser/OS language and anything unsupported falls back to English; the choice persists on the host. Artwork must be a PNG, at most **4 MiB**, with each side **1–4096 px**. SVG, arbitrary data URLs and malformed/truncated containers are rejected. Custom-to-custom changes invalidate the image revision immediately.
 
 Image, size and toggles are saved atomically to `$DSH_HOME/capyreporter.json` (default `~/.dsh`). A legacy `homura-pet.json` is read only when that file is absent. Page position is stored separately in this browser's local storage; desktop position is session-only. Corrupt settings are logged, not silently replaced with unrelated legacy settings. Failed writes leave the previous preferences active.
 
@@ -66,7 +66,7 @@ dsh plugin --profile web remove dsh-capyreporter
 
 Plugin HTTP handlers are separate from DSH's SPA authentication gate. This plugin rejects cross-origin/opaque browser requests, non-loopback callers/Host headers and GET mutations; it does not expose wildcard CORS. The desktop uses an activation-scoped capability held in its main process, a sandboxed renderer, restrictive CSP and an allowlisted IPC broker. See [architecture](docs/architecture.md) for boundaries, including what they do **not** protect against.
 
-No telemetry or outbound service is used. Notifications and the desktop window can expose session titles/assistant previews on your screen; disable them in shared-screen environments.
+No telemetry or outbound service is used. Notifications and the always-on-top pet can expose session titles/assistant previews on your screen; disable them in shared-screen environments.
 
 - [Troubleshooting](docs/troubleshooting.md)
 - [Audit, comparisons and validation](docs/audit.md)

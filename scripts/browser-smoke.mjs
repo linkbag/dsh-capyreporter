@@ -278,7 +278,7 @@ test('real Chromium: zh-CN locale localizes bubble, actions and settings', { tim
   await settings.getByText('悬浮宠物', { exact: true }).waitFor()
   await settings.getByText('状态气泡', { exact: true }).waitFor()
   await settings.getByText('汇报思考过程', { exact: true }).waitFor()
-  await settings.getByText('桌面窗口置顶', { exact: true }).waitFor()
+  await settings.getByText('宠物跨窗口置顶', { exact: true }).waitFor()
   await settings.getByRole('button', { name: '隐藏宠物', exact: true }).waitFor()
   await page.evaluate(() => window.unmountPlugin())
   assert.equal(await pet.count(), 0)

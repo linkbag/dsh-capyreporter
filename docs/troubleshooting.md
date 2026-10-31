@@ -5,7 +5,7 @@
 1. Check Settings → CapyReporter for enabled, desktop status, and desktop error. `starting` is **not** ready.
 2. Install an Electron binary yourself; set `DSH_PET_ELECTRON_PATH` or `ELECTRON_PATH`, or use `$DSH_HOME/electron/`. No automatic download occurs. Legacy Windows install locations are still supported.
 3. The actual DSH port is automatic. If overriding `DSH_CAPYREP_BASE_URL`, use only an exact loopback origin such as `http://127.0.0.1:3080`. Do not include credentials, paths, query parameters or login tokens.
-4. Toggle **Use page only**, then **Enable desktop** to retry. There is deliberately no endless crash/restart loop.
+4. Toggle **Use page pet**, then **Enable always-on-top pet** to retry. There is deliberately no endless crash/restart loop.
 
 The page pet remains until artwork and activity load and the renderer heartbeats. A heartbeat older than ten seconds restores the page fallback; the host watchdog stops an unresponsive helper after ~20 seconds. A disconnected helper closes after three failed polls. An orderly plugin stop waits for helper shutdown. Reloading only the page does not replace old host code.
 
