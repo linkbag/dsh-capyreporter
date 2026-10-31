@@ -24,12 +24,12 @@
       bubbleSizeAria: 'Resize bubble (pixels)'
     },
     zh: {
-      details: '详情', collapse: '收起', dismiss: '忽略', dismissResult: '忽略结果', goToChat: '转到会话',
+      details: '详情', collapse: '收起', dismiss: '忽略', dismissResult: '忽略结果', goToChat: '前往会话',
       muteFor: '静音 {n} 分钟', runEnded: '运行结束', stillRunning: '还有 {n} 个运行中', runningHead: '⏳ {n} 个运行中 — {title}',
       runningHeadSubs: '⏳ {n} 个运行中 · {subs} — {title}', subagentOne: '1 个子代理', subagents: '{n} 个子代理', subagentActiveOne: '🤖 1 个子代理运行中', subagentActive: '🤖 {n} 个子代理运行中',
-      subagentFinished: '✅ 子智能体已完成',
-      subagentFailed: '⚠️ 子智能体失败',
-      subagentCancelled: '⏹ 子智能体已取消',
+      subagentFinished: '✅ 子代理已完成',
+      subagentFailed: '⚠️ 子代理失败',
+      subagentCancelled: '⏹ 子代理已取消',
       disconnected: '⚠️ 报告器已断开 — 正在重试',
       activityAria: 'CapyReporter 动态', logAria: '会话动态详情', controlsAria: 'CapyReporter 控制；可拖动移动', menuAria: 'CapyReporter 控制',
       restoreBubble: '恢复气泡', openSite: '打开 DeepSeek Harness', usePagePet: '改用网页宠物', resetSize: '重置气泡大小',
@@ -48,7 +48,7 @@
       bubbleSizeAria: 'Cambiar tamaño de la burbuja (píxeles)'
     },
     hi: {
-      details: 'विवरण', collapse: 'छोटा करें', dismiss: 'खारिज करें', dismissResult: 'परिणाम खारिज करें', goToChat: 'चैट पर जाएँ',
+      details: 'विवरण', collapse: 'छोटा करें', dismiss: 'छिपाएँ', dismissResult: 'परिणाम छिपाएँ', goToChat: 'चैट खोलें',
       muteFor: '{n} मिनट म्यूट करें', runEnded: 'रन पूरा हुआ', stillRunning: '{n} अभी चल रहे हैं', runningHead: '⏳ {n} चल रहे हैं — {title}',
       runningHeadSubs: '⏳ {n} चल रहे हैं · {subs} — {title}', subagentOne: '1 सबएजेंट', subagents: '{n} सबएजेंट', subagentActiveOne: '🤖 1 सबएजेंट चल रहा है', subagentActive: '🤖 {n} सबएजेंट चल रहे हैं',
       subagentFinished: '✅ सबएजेंट पूर्ण',
@@ -96,7 +96,7 @@
       bubbleSizeAria: 'Изменить размер пузыря (пиксели)'
     },
     ja: {
-      details: '詳細', collapse: '折りたたむ', dismiss: '閉じる', dismissResult: '結果を閉じる', goToChat: 'チャットへ',
+      details: '詳細', collapse: '折りたたむ', dismiss: '非表示', dismissResult: '結果を閉じる', goToChat: 'チャットを開く',
       muteFor: '{n} 分ミュート', runEnded: '実行終了', stillRunning: '実行中 {n} 件', runningHead: '⏳ 実行中 {n} 件 — {title}',
       runningHeadSubs: '⏳ 実行中 {n} 件 · {subs} — {title}', subagentOne: 'サブエージェント 1 件', subagents: 'サブエージェント {n} 件', subagentActiveOne: '🤖 サブエージェント 1 件実行中', subagentActive: '🤖 サブエージェント {n} 件実行中',
       subagentFinished: '✅ サブエージェント完了',
@@ -116,19 +116,19 @@
       subagentCancelled: '⏹ Sous-agent annulé',
       disconnected: '⚠️ Rapporteur déconnecté — nouvelle tentative',
       activityAria: 'Activité CapyReporter', logAria: 'Détails de l’activité de la session', controlsAria: 'Contrôles CapyReporter ; glissez pour déplacer', menuAria: 'Contrôles CapyReporter',
-      restoreBubble: 'Restaurer la bulle', openSite: 'Ouvrir DeepSeek Harness', usePagePet: 'Mascotte de la page', resetSize: 'Réinitialiser la taille',
+      restoreBubble: 'Restaurer la bulle', openSite: 'Ouvrir DeepSeek Harness', usePagePet: 'Utiliser la mascotte de la page', resetSize: 'Réinitialiser la taille',
       bubbleSizeAria: 'Redimensionner la bulle (pixels)'
     },
     de: {
       details: 'Details', collapse: 'Einklappen', dismiss: 'Ausblenden', dismissResult: 'Ergebnis ausblenden', goToChat: 'Zum Chat',
       muteFor: '{n} Min. stumm', runEnded: 'Lauf beendet', stillRunning: '{n} laufen noch', runningHead: '⏳ {n} laufen — {title}',
       runningHeadSubs: '⏳ {n} laufen · {subs} — {title}', subagentOne: '1 Subagent', subagents: '{n} Subagenten', subagentActiveOne: '🤖 1 Subagent läuft', subagentActive: '🤖 {n} Subagenten laufen',
-      subagentFinished: '✅ Subagent fertig',
+      subagentFinished: '✅ Subagent abgeschlossen',
       subagentFailed: '⚠️ Subagent fehlgeschlagen',
       subagentCancelled: '⏹ Subagent abgebrochen',
       disconnected: '⚠️ Reporter getrennt — neuer Versuch',
       activityAria: 'CapyReporter-Aktivität', logAria: 'Details zur Sitzungsaktivität', controlsAria: 'CapyReporter-Steuerung; zum Verschieben ziehen', menuAria: 'CapyReporter-Steuerung',
-      restoreBubble: 'Blase wiederherstellen', openSite: 'DeepSeek Harness öffnen', usePagePet: 'Seiten-Pet verwenden', resetSize: 'Blasengröße zurücksetzen',
+      restoreBubble: 'Blase wiederherstellen', openSite: 'DeepSeek Harness öffnen', usePagePet: 'Pet der Seite verwenden', resetSize: 'Blasengröße zurücksetzen',
       bubbleSizeAria: 'Blasengröße ändern (Pixel)'
     }
   };

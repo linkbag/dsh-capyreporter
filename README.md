@@ -12,7 +12,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 - **Only the main chat claims a finished turn.** Delegated subagent runs never raise the green *Turn complete* tick for the parent chat: while a main chat is running the headline keeps showing it, and delegated finishes (`✅ Subagent finished`, `⚠️ Subagent failed`, `⏹ Subagent cancelled`) appear as progress milestones in the details. A main-chat result may only take the headline once no main chat is running.
 - Independent unread results for parallel sessions: starting another session does not erase a result. Up to 20 results are retained in memory for six hours.
 - Compact headlines and explicit **Details / Go to chat / Mute / Dismiss result** controls. Keyboard support and reduced-motion-safe styling.
-- **Ten-language UI with a live switcher** (English, 中文, Español, हिन्दी, العربية, Português, Русский, 日本語, Français, Deutsch) that follows the browser/OS language by default, applies to the page pet and the desktop companion, and flips to right-to-left for Arabic.
+- **Ten-language UI with a live switcher** (English, 中文, Español, हिन्दी, العربية, Português, Русский, 日本語, Français, Deutsch) that follows the browser/OS language by default, applies to the page pet and the desktop companion, and flips to right-to-left for Arabic. Every locale is copy-edited for natural phrasing — bubble actions, pet menu, settings rows and the desktop companion included — rather than a literal machine translation.
 - Optional away notifications: off by default, require both the plugin toggle and browser permission, and do not notify a focused page. Different open DSH tabs may each notify.
 
 ## Install

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.21 (2026-10-31) — translation naturalness pass across all ten languages
+
+- **Every supported language got a copy-editing pass**, including the bubble buttons and the desktop companion labels. Awkward literal translations were replaced with the wording a native speaker would expect: German *Seiten-Pet* → *Pet der Seite*, Japanese *チャットへ* → *チャットを開く* and *閉じる* → *非表示* (the bubble *Dismiss* is a hide action, not a close action), Hindi *खारिज करें* → *छिपाएँ*, Chinese *置顶桌面窗口* → *桌面窗口置顶* and the subagent milestones now consistently say 子代理, plus *启用/重试桌面窗口*, *仅用网页宠物*, *前往会话*.
+- **"Healthy renderer" jargon is gone.** English, Spanish, Portuguese, French, German, Hindi and Arabic no longer describe the desktop window as *healthy/sano/gesund/स्वस्थ/سليم*: the status line now says the window is ready, running correctly, or will be available once it is ready (the underlying `desktopStatus` values are unchanged).
+- **Smaller consistency fixes:** Russian *Повторить рабочий стол* → *Повторить окно* and *Включить рабочий стол* → *Включить окно*; Spanish/Portuguese *Reactivar* → *Quitar silencio* / *Tirar silêncio*, French *Réactiver* → *Quitter le silence*; German *Jetzt stumm* → *Jetzt stummschalten* and *Stummschaltung aus* → *Stummschaltung aufheben*; Arabic desktop row gained its missing definite article and *blocked runs* is now *الحظر* instead of *التعطّل*; Japanese and Chinese desktop toggle labels name the window explicitly.
+- No API, layout or behaviour changes; the settings Language row, RTL handling, desktop companion synchronisation and the `/language` persistence contract are untouched. The Chromium smoke suite now also asserts the reworded Chinese bubble buttons (*前往会话*, *静音 30 分钟*) and the desktop row (*桌面窗口置顶*).
+
 ## 0.6.20 (2026-10-30) — subagent activity no longer fakes a finished chat
 
 - **The green *Turn complete* tick only belongs to the main chat.** Delegated subagent sessions that finish (or fail, or get cancelled) used to report themselves as a completed turn, so the bubble announced *Turn complete* — sometimes saying *1 still running* — while the main chat was still working. Only root sessions can now claim a finished result: a headless *Turn complete / Run cancelled / Run failed* headline appears only once no main chat is running; while one is live, the running headline wins even if another chat ended in the meantime.
