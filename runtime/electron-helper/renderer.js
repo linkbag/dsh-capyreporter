@@ -14,6 +14,9 @@
     en: {
       details: 'Details', collapse: 'Collapse', dismiss: 'Dismiss', dismissResult: 'Dismiss result', goToChat: 'Go to chat',
       muteFor: 'Mute {n} min', runEnded: 'Run ended', stillRunning: '{n} still running', runningHead: '⏳ {n} running — {title}',
+      subagentFinished: '✅ Subagent finished',
+      subagentFailed: '⚠️ Subagent failed',
+      subagentCancelled: '⏹ Subagent cancelled',
       disconnected: '⚠️ Reporter disconnected — retrying',
       activityAria: 'CapyReporter activity', logAria: 'Session activity details', controlsAria: 'CapyReporter controls; drag to move', menuAria: 'CapyReporter controls',
       restoreBubble: 'Restore bubble', openSite: 'Open DeepSeek Harness', usePagePet: 'Use page pet instead', resetSize: 'Reset bubble size',
@@ -22,6 +25,9 @@
     zh: {
       details: '详情', collapse: '收起', dismiss: '忽略', dismissResult: '忽略结果', goToChat: '转到会话',
       muteFor: '静音 {n} 分钟', runEnded: '运行结束', stillRunning: '还有 {n} 个运行中', runningHead: '⏳ {n} 个运行中 — {title}',
+      subagentFinished: '✅ 子智能体已完成',
+      subagentFailed: '⚠️ 子智能体失败',
+      subagentCancelled: '⏹ 子智能体已取消',
       disconnected: '⚠️ 报告器已断开 — 正在重试',
       activityAria: 'CapyReporter 动态', logAria: '会话动态详情', controlsAria: 'CapyReporter 控制；可拖动移动', menuAria: 'CapyReporter 控制',
       restoreBubble: '恢复气泡', openSite: '打开 DeepSeek Harness', usePagePet: '改用网页宠物', resetSize: '重置气泡大小',
@@ -30,6 +36,9 @@
     es: {
       details: 'Detalles', collapse: 'Contraer', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir al chat',
       muteFor: 'Silenciar {n} min', runEnded: 'Ejecución finalizada', stillRunning: '{n} aún en ejecución', runningHead: '⏳ {n} en ejecución — {title}',
+      subagentFinished: '✅ Subagente finalizado',
+      subagentFailed: '⚠️ Subagente falló',
+      subagentCancelled: '⏹ Subagente cancelado',
       disconnected: '⚠️ Reportero desconectado — reintentando',
       activityAria: 'Actividad de CapyReporter', logAria: 'Detalles de actividad de la sesión', controlsAria: 'Controles de CapyReporter; arrastra para mover', menuAria: 'Controles de CapyReporter',
       restoreBubble: 'Restaurar burbuja', openSite: 'Abrir DeepSeek Harness', usePagePet: 'Usar mascota de la página', resetSize: 'Restablecer tamaño',
@@ -38,6 +47,9 @@
     hi: {
       details: 'विवरण', collapse: 'छोटा करें', dismiss: 'खारिज करें', dismissResult: 'परिणाम खारिज करें', goToChat: 'चैट पर जाएँ',
       muteFor: '{n} मिनट म्यूट करें', runEnded: 'रन पूरा हुआ', stillRunning: '{n} अभी चल रहे हैं', runningHead: '⏳ {n} चल रहे हैं — {title}',
+      subagentFinished: '✅ सबएजेंट पूर्ण',
+      subagentFailed: '⚠️ सबएजेंट विफल',
+      subagentCancelled: '⏹ सबएजेंट रद्द',
       disconnected: '⚠️ रिपोर्टर डिस्कनेक्ट — पुनः प्रयास',
       activityAria: 'CapyReporter गतिविधि', logAria: 'सत्र गतिविधि विवरण', controlsAria: 'CapyReporter नियंत्रण; खींचकर ले जाएँ', menuAria: 'CapyReporter नियंत्रण',
       restoreBubble: 'बबल बहाल करें', openSite: 'DeepSeek Harness खोलें', usePagePet: 'पेज पेट इस्तेमाल करें', resetSize: 'बबल आकार रीसेट करें',
@@ -46,6 +58,9 @@
     ar: {
       details: 'التفاصيل', collapse: 'طيّ', dismiss: 'تجاهل', dismissResult: 'تجاهل النتيجة', goToChat: 'الانتقال إلى المحادثة',
       muteFor: 'كتم {n} دقيقة', runEnded: 'انتهى التشغيل', stillRunning: '{n} قيد التشغيل', runningHead: '⏳ {n} قيد التشغيل — {title}',
+      subagentFinished: '✅ اكتمل الوكيل الفرعي',
+      subagentFailed: '⚠️ فشل الوكيل الفرعي',
+      subagentCancelled: '⏹ أُلغي الوكيل الفرعي',
       disconnected: '⚠️ انقطع المُبلّغ — إعادة المحاولة',
       activityAria: 'نشاط CapyReporter', logAria: 'تفاصيل نشاط الجلسة', controlsAria: 'عناصر تحكم CapyReporter؛ اسحب للتحريك', menuAria: 'عناصر تحكم CapyReporter',
       restoreBubble: 'استعادة الفقاعة', openSite: 'افتح DeepSeek Harness', usePagePet: 'استخدم حيوان الصفحة', resetSize: 'إعادة تعيين حجم الفقاعة',
@@ -54,6 +69,9 @@
     pt: {
       details: 'Detalhes', collapse: 'Recolher', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir para o chat',
       muteFor: 'Silenciar {n} min', runEnded: 'Execução concluída', stillRunning: '{n} ainda em execução', runningHead: '⏳ {n} em execução — {title}',
+      subagentFinished: '✅ Subagente concluído',
+      subagentFailed: '⚠️ Subagente falhou',
+      subagentCancelled: '⏹ Subagente cancelado',
       disconnected: '⚠️ Relator desconectado — tentando novamente',
       activityAria: 'Atividade do CapyReporter', logAria: 'Detalhes da atividade da sessão', controlsAria: 'Controles do CapyReporter; arraste para mover', menuAria: 'Controles do CapyReporter',
       restoreBubble: 'Restaurar balão', openSite: 'Abrir DeepSeek Harness', usePagePet: 'Usar mascote da página', resetSize: 'Redefinir tamanho',
@@ -62,6 +80,9 @@
     ru: {
       details: 'Подробности', collapse: 'Свернуть', dismiss: 'Скрыть', dismissResult: 'Скрыть результат', goToChat: 'Перейти в чат',
       muteFor: 'Без звука {n} мин', runEnded: 'Запуск завершён', stillRunning: 'ещё выполняется: {n}', runningHead: '⏳ выполняется: {n} — {title}',
+      subagentFinished: '✅ Субагент завершён',
+      subagentFailed: '⚠️ Субагент завершился с ошибкой',
+      subagentCancelled: '⏹ Субагент отменён',
       disconnected: '⚠️ Отчёт отключён — повторная попытка',
       activityAria: 'Активность CapyReporter', logAria: 'Подробности активности сессии', controlsAria: 'Управление CapyReporter; перетащите, чтобы переместить', menuAria: 'Управление CapyReporter',
       restoreBubble: 'Вернуть пузырь', openSite: 'Открыть DeepSeek Harness', usePagePet: 'Питомец на странице', resetSize: 'Сбросить размер',
@@ -70,6 +91,9 @@
     ja: {
       details: '詳細', collapse: '折りたたむ', dismiss: '閉じる', dismissResult: '結果を閉じる', goToChat: 'チャットへ',
       muteFor: '{n} 分ミュート', runEnded: '実行終了', stillRunning: '実行中 {n} 件', runningHead: '⏳ 実行中 {n} 件 — {title}',
+      subagentFinished: '✅ サブエージェント完了',
+      subagentFailed: '⚠️ サブエージェント失敗',
+      subagentCancelled: '⏹ サブエージェント中止',
       disconnected: '⚠️ レポーター切断 — 再接続中',
       activityAria: 'CapyReporter アクティビティ', logAria: 'セッションの詳細', controlsAria: 'CapyReporter の操作。ドラッグで移動', menuAria: 'CapyReporter の操作',
       restoreBubble: 'バブルを戻す', openSite: 'DeepSeek Harness を開く', usePagePet: 'ページのペットを使う', resetSize: 'バブルのサイズをリセット',
@@ -78,6 +102,9 @@
     fr: {
       details: 'Détails', collapse: 'Réduire', dismiss: 'Masquer', dismissResult: 'Masquer le résultat', goToChat: 'Aller au chat',
       muteFor: 'Silence {n} min', runEnded: 'Exécution terminée', stillRunning: '{n} encore en cours', runningHead: '⏳ {n} en cours — {title}',
+      subagentFinished: '✅ Sous-agent terminé',
+      subagentFailed: '⚠️ Échec du sous-agent',
+      subagentCancelled: '⏹ Sous-agent annulé',
       disconnected: '⚠️ Rapporteur déconnecté — nouvelle tentative',
       activityAria: 'Activité CapyReporter', logAria: 'Détails de l’activité de la session', controlsAria: 'Contrôles CapyReporter ; glissez pour déplacer', menuAria: 'Contrôles CapyReporter',
       restoreBubble: 'Restaurer la bulle', openSite: 'Ouvrir DeepSeek Harness', usePagePet: 'Mascotte de la page', resetSize: 'Réinitialiser la taille',
@@ -86,6 +113,9 @@
     de: {
       details: 'Details', collapse: 'Einklappen', dismiss: 'Ausblenden', dismissResult: 'Ergebnis ausblenden', goToChat: 'Zum Chat',
       muteFor: '{n} Min. stumm', runEnded: 'Lauf beendet', stillRunning: '{n} laufen noch', runningHead: '⏳ {n} laufen — {title}',
+      subagentFinished: '✅ Subagent fertig',
+      subagentFailed: '⚠️ Subagent fehlgeschlagen',
+      subagentCancelled: '⏹ Subagent abgebrochen',
       disconnected: '⚠️ Reporter getrennt — neuer Versuch',
       activityAria: 'CapyReporter-Aktivität', logAria: 'Details zur Sitzungsaktivität', controlsAria: 'CapyReporter-Steuerung; zum Verschieben ziehen', menuAria: 'CapyReporter-Steuerung',
       restoreBubble: 'Blase wiederherstellen', openSite: 'DeepSeek Harness öffnen', usePagePet: 'Seiten-Pet verwenden', resetSize: 'Blasengröße zurücksetzen',
@@ -163,22 +193,35 @@
     refit();
   }
   function sessionId() {
-    return activity?.completed?.id || activity?.running?.[0]?.id || null;
+    return (activity?.running || []).find(row => !row.subagent)?.id || activity?.completed?.id || activity?.running?.[0]?.id || null;
+  }
+  // Delegated agents finish inside the parent turn; localize that milestone.
+  function progressLine(item) {
+    const key = item.outcome === 'completed' ? 'subagentFinished' : item.outcome === 'error' ? 'subagentFailed' : 'subagentCancelled';
+    return t(key) + (item.title ? ' · ' + item.title : '');
   }
   function render() {
     const done = activity?.completed, running = activity?.running || [];
-    sig = JSON.stringify([done?.at, ...running.map(row => [row.id, row.title, row.preview, row.lines?.at(-1)])]);
+    const roots = activity?.runningCount || 0, progress = activity?.progress || [];
+    sig = JSON.stringify([done?.at, roots, activity?.subagentCount, progress.at(-1)?.at, ...running.map(row => [row.id, row.title, row.preview, row.lines?.at(-1)])]);
     if (suppressed === sig || snoozed || (!done && !running.length)) { bubble.style.display = 'none'; refit(); return; }
-    head.textContent = done ? (done.label || t('runEnded')) + ' — ' + done.title + (running.length ? ' · ' + t('stillRunning', { n: running.length }) : '') : t('runningHead', { n: running.length, title: running[0].title });
+    if (done && !roots) {
+      head.textContent = (done.label || t('runEnded')) + ' — ' + done.title + (running.length ? ' · ' + t('stillRunning', { n: running.length }) : '');
+    } else if (roots || running.length) {
+      const liveRow = running.find(entry => !entry.subagent) || running[0];
+      head.textContent = t('runningHead', { n: roots || running.length, title: liveRow.title });
+    }
     // Milestones only: the host already filters tool chatter out of preview.
-    const row = running[0];
-    detail.textContent = done?.preview || (row?.kind === 'think' ? '💭 ' + row.preview : row?.preview) || '';
+    const latest = progress.at(-1), live = roots ? running.find(entry => !entry.subagent) : running[0];
+    const liveMilestone = live ? (live.kind === 'think' ? '💭 ' + live.preview : live.preview) : null;
+    detail.textContent = liveMilestone || (latest ? progressLine(latest) : null) || done?.preview || '';
     detail.style.display = expanded ? 'none' : 'block';
     log.classList.toggle('is-on', expanded);
-    log.textContent = [...(done ? [done] : []), ...running].map(row => row.title + '\n' + (row.lines || []).join('\n') + (row.preview ? '\n' + row.preview : '')).join('\n\n');
+    log.textContent = [...(done ? [done] : []), ...running, ...progress.slice(-6).map(item => ({ title: progressLine(item), lines: [], preview: null }))]
+      .map(row => row.title + ((row.lines && row.lines.length) ? '\n' + row.lines.join('\n') : '') + (row.preview ? '\n' + row.preview : '')).join('\n\n');
     el('detailsButton').textContent = expanded ? t('collapse') : t('details');
     el('detailsButton').setAttribute('aria-expanded', String(expanded));
-    el('dismissButton').textContent = done ? t('dismissResult') : t('dismiss');
+    el('dismissButton').textContent = done && !roots ? t('dismissResult') : t('dismiss');
     el('muteButton').textContent = t('muteFor', { n: muteMinutes });
     chatButton.style.display = sessionId() ? '' : 'none';
     bubble.style.display = 'block';
@@ -227,7 +270,7 @@
   el('dismissButton').addEventListener('click', () => {
     // Dismiss is always available: it hides the current bubble; when a run has
     // ended it also clears the result on the host.
-    if (activity?.completed) bridge.request('/dismiss', { at: activity.completed.at }).catch(showError);
+    if (activity?.completed && !(activity?.runningCount)) bridge.request('/dismiss', { at: activity.completed.at }).catch(showError);
     suppressed = sig; expanded = false; bubble.style.display = 'none'; refit();
   });
   el('muteButton').addEventListener('click', async () => {

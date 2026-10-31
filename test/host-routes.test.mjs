@@ -167,6 +167,33 @@ test('real scoped event payloads flow into running/outcome snapshots, and disabl
   await f.post('/enabled', { enabled: true })
   assert.equal((await f.get('/activity')).runningCount, 1)
 })
+test('a delegated session finishing does not end the reported turn', async t => {
+  const root = { id: 'root', header: { cwd: 'C:/project' } }
+  const child = { id: 'child', header: { cwd: 'C:/project', origin: 'subagent', parentSession: 'root' } }
+  const sessions = new Map([['root', root], ['child', child]])
+  const f = await fixture(t, {}, {
+    sessions: { get: id => sessions.get(id) || null },
+    workspaceRegistry: { list: () => [{ path: 'C:/project', title: 'Project' }] },
+    sessionTitle: { get: session => ({ title: session?.id === 'root' ? 'Main chat' : 'Researcher' }) }
+  })
+  f.emit('agent/status', { agent: { id: 'root', session: root }, status: 'running' })
+  f.emit('agent/status', { agent: { id: 'child', session: child }, status: 'running' })
+  let activity = await f.get('/activity')
+  assert.equal(activity.runningCount, 1, 'only the root chat counts as a running chat')
+  assert.equal(activity.subagentCount, 1)
+  assert.equal(activity.running.find(row => row.id === 'child').subagent, true)
+  f.emit('agent/status', { agent: { id: 'child', session: child }, status: 'idle' })
+  activity = await f.get('/activity')
+  assert.equal(activity.completed, null, 'a delegated finish must never claim the chat completed')
+  assert.equal(activity.progress.length, 1)
+  assert.match(activity.progress[0].line, /^✅ Subagent finished · Project · Researcher$/u)
+  f.emit('session/event', root, { type: 'turn/end', data: { reason: { kind: 'completed' } } })
+  f.emit('agent/status', { agent: { id: 'root', session: root }, status: 'idle' })
+  activity = await f.get('/activity')
+  assert.equal(activity.completed.outcome, 'completed')
+  assert.match(activity.completed.label, /^✅/u)
+  assert.equal(activity.runningCount, 0)
+})
 test('hot-activation seeds existing running agents without replaying idle sessions', async t => {
   const f = await fixture(t, {}, { agents: { list: () => [{ id: 'active', status: 'running' }, { id: 'old', status: 'idle' }] } })
   assert.equal((await f.get('/activity')).running[0].id, 'active')

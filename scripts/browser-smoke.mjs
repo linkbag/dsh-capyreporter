@@ -37,8 +37,10 @@ async function browserAssets() {
 test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisions, reconnect and cleanup', { timeout: 90_000 }, async t => {
   const assets = await browserAssets()
   const session = { id: 'first', header: { cwd: 'C:/test-project' } }
+  // A delegated session of the parallel chat: its finish is progress, not a result.
+  const child = { id: 'child', header: { cwd: 'C:/test-project', origin: 'subagent', parentSession: 'second' } }
   const f = await fixture(t, { enabled: false }, {
-    sessions: { get: id => ({ ...session, id }) }, workspaceRegistry: { list: () => [{ path: 'C:/test-project', title: 'Audit project' }] },
+    sessions: { get: id => id === 'child' ? child : { ...session, id } }, workspaceRegistry: { list: () => [{ path: 'C:/test-project', title: 'Audit project' }] },
     sessionTitle: { get: s => ({ title: s.id === 'first' ? 'Reporting audit' : 'Parallel task' }) },
   }, (req, res) => { const asset = assets.get(req.url); res.writeHead(asset ? 200 : 404, { 'content-type': asset?.[0] || 'text/plain' }); res.end(asset?.[1] || 'Not found') })
   const browser = await chromium.launch({ channel: process.env.DSH_TEST_BROWSER_CHANNEL || 'chrome', headless: true })
@@ -120,11 +122,23 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   f.emit('agent/status', { agent: { id: other.id, session: other }, status: 'running' })
   f.emit('session/event', session, { type: 'turn/end', data: { reason: { kind: 'aborted' } } })
   f.emit('agent/status', { agent, status: 'idle' })
-  await bubble.getByText(/Run cancelled.*1 still running/).waitFor()
-  await page.screenshot({ path: join(reports, 'browser-smoke.png'), fullPage: true })
-  await bubble.getByRole('button', { name: 'Dismiss result', exact: true }).click()
+  // A root chat ending while another root chat still runs keeps the head on the
+  // running chat; the cancelled result is recorded but not claimed.
   await bubble.getByText(/1 running.*Parallel task/).waitFor()
+  assert.equal(await bubble.locator('.dsh-capy-head').getByText(/Run cancelled/).count(), 0, 'a finished chat cannot claim the bubble head while another chat runs')
+  await page.screenshot({ path: join(reports, 'browser-smoke.png'), fullPage: true })
+  const cancelled = (await f.get('/activity')).completed
+  assert.match(cancelled.label, /cancelled/)
+  await f.post('/dismiss', { at: cancelled.at })
   assert.equal((await f.get('/activity')).completed, null)
+  // A delegated session finishing never claims the whole chat completed; it is
+  // reported as a milestone inside the still-running parent chat.
+  f.emit('agent/status', { agent: { id: 'child', session: child }, status: 'running' })
+  f.emit('agent/status', { agent: { id: 'child', session: child }, status: 'idle' })
+  await bubble.getByText(/1 running.*Parallel task/).waitFor()
+  assert.equal(await bubble.getByText(/Turn complete/).count(), 0, 'a delegated finish must not claim the chat completed')
+  await bubble.getByText('✅ Subagent finished', { exact: false }).waitFor()
+  await bubble.getByRole('button', { name: 'Collapse', exact: true }).click()
   await settings.getByText('Status bubble', { exact: true }).waitFor()
   // Language switching is immediate, localized, persisted and drives RTL.
   const language = settings.locator('select', { has: page.locator('option[value="auto"]') })
@@ -296,7 +310,14 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   let alive = true, heartbeat = 0, requested = [], navigated = [], heartbeatReady
   const ready = new Promise(resolve => { heartbeatReady = resolve })
   const state = { enabled: true, desktopEnabled: true, desktop: false, scale: 1, hasCustom: false, imageRevision: 0, language: 'de', snoozed: false, snoozeMinutes: 30 }
-  const activity = { running: [{ id: 'desk', title: 'Desktop session', kind: null, preview: null, lines: [] }], runningCount: 1, completed: null }
+  const activity = {
+    running: [
+      { id: 'desk', title: 'Desktop session', kind: null, preview: null, lines: [] },
+      { id: 'helper', title: 'Delegated helper', kind: null, preview: null, lines: [], subagent: true, parent: 'desk' }
+    ], runningCount: 1, subagentCount: 1,
+    completed: { id: 'old', title: 'Earlier chat', at: 1, outcome: 'completed', label: '✅ Turn complete', preview: 'done', lines: [] },
+    progress: [{ id: 'helper', title: 'Delegated helper', at: 2, outcome: 'completed', kind: 'subagent', line: '✅ Subagent finished · Delegated helper' }]
+  }
   const server = createServer((req, res) => {
     const role = authorize(req, server.address().port, token)
     requested.push(req.url)
@@ -326,6 +347,7 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   await page.waitForFunction(() => document.getElementById('img').style.height !== '')
   await Promise.race([ready, new Promise((_, reject) => setTimeout(() => reject(new Error('Desktop heartbeat missing')), 8000).unref())]).catch(async error => { console.error('Desktop diagnostics:', errors, requested, await page.locator('body').innerText()); throw error })
   assert.ok(heartbeat > 0, 'desktop readiness follows image decode and activity bootstrap')
+  assert.equal((await page.locator('#bubbleHead').textContent()).trim(), '⏳ 1 laufen — Desktop session', 'a delegated finish never replaces the running chat head')
   const preferences = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences())
   assert.equal(preferences.sandbox, true); assert.equal(preferences.contextIsolation, true); assert.equal(preferences.nodeIntegration, false)
   assert.equal(await page.evaluate(() => typeof window.require), 'undefined')

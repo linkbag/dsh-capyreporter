@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.20 (2026-10-30) — subagent activity no longer fakes a finished chat
+
+- **The green *Turn complete* tick only belongs to the main chat.** Delegated subagent sessions that finish (or fail, or get cancelled) used to report themselves as a completed turn, so the bubble announced *Turn complete* — sometimes saying *1 still running* — while the main chat was still working. Only root sessions can now claim a finished result: a headless *Turn complete / Run cancelled / Run failed* headline appears only once no main chat is running; while one is live, the running headline wins even if another chat ended in the meantime.
+- **Subagent progress is reported instead.** A finishing delegated agent becomes a milestone in the bubble details — `✅ Subagent finished`, `⚠️ Subagent failed`, `⏹ Subagent cancelled` with the session title — shown in the expanded log and, when the main chat has no fresh assistant text yet, as the collapsed detail line. Starting a new main-chat turn clears the previous turn's progress entries; the desktop companion shows the same milestones.
+- Host `/activity` now distinguishes roots from delegates: `runningCount` counts main chats only, `subagentCount` counts delegated runs, running rows carry `subagent`/`parent` flags and a bounded `progress` list carries delegated finishes. Rows without session metadata keep the old behaviour (treated as main chats), so a DSH build that does not expose `session.header.origin` degrades gracefully.
+- Unit tests 66 (three new activity tests plus a host-route test for a delegated finish) and the Chromium/Electron smoke suites now assert that a delegated finish never replaces the running headline on either surface.
+
 ## 0.6.19 (2026-10-25) — milestone-only bubble, thinking opt-in, snooze, free resize, desktop parity, ten-language UI
 
 _0.1.7 and 0.1.8 were versioned in the repository but never published to npm; 0.6.19 is the first release containing everything below._
