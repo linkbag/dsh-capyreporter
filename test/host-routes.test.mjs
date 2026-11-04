@@ -244,5 +244,6 @@ test('desktop navigation stays helper-only and never surfaces as a page command 
   const f = await fixture(t)
   assert.equal((await f.get('/state')).navigate, null)
   assert.equal((await f.post('/desktop/navigate', { sessionId: 'a' })).status, 403)
+  assert.equal((await f.post('/desktop/navigate', { settings: true })).status, 403)
   assert.equal((await f.get('/state')).navigate, null)
 })

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.22 (2026-11-04) — switch to the always-on-top pet from either menu
+
+- **The page pet menu can hand reporting over to the always-on-top companion.** While the companion is switched off or has not become ready yet, the pet's right-click menu shows *Enable always-on-top pet* (or *Retry always-on-top pet* when a start failed), which starts it through the same atomic `/desktop/show` path the settings row uses. The item disappears once the companion is healthy, because the page pet is then hidden anyway.
+- **The desktop companion menu gained *Open settings*.** The always-on-top window cannot open the page's settings dialog itself, so the item asks the page half — a helper-only `POST /desktop/navigate { settings: true }` parks a one-shot request that the page consumes on its next poll (`navigate.kind === 'settings'`) and answers by opening the CapyReporter settings section. Session hand-offs are unchanged, one-shot, and expire after 30 s; the request still requires the helper capability and the loopback-origin check.
+- Regression coverage: the Chromium suite asserts the page menu's *Enable always-on-top pet* entry and that a settings hand-off opens the plugin's settings section; the Electron suite asserts the localized desktop *Open settings* menu entry posts `{ settings: true }`. Unit tests stay at 66, smoke 4/4.
+
 ## 0.6.21 (2026-11-04) — close × on the bubble, settings shortcut in the pet menu
 
 - **The bubble closes from a top-right ×.** The Dismiss action moved out of the action row into a small × at the bubble's top-right corner (the pet menu keeps *Dismiss result*): during a run it hides the current bubble without muting, so fresh activity brings it back, and once a run has ended it acknowledges the result on the host. The desktop companion carries the same × with a localized aria label; the bubble no longer shows a *Dismiss* button.

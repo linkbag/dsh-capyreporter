@@ -22,7 +22,7 @@
       activityAria: 'CapyReporter activity', logAria: 'Session activity details', controlsAria: 'CapyReporter controls; drag to move', menuAria: 'CapyReporter controls',
       restoreBubble: 'Restore bubble', openSite: 'Open DeepSeek Harness', usePagePet: 'Use page pet instead', resetSize: 'Reset bubble size',
       bubbleSizeAria: 'Resize bubble (pixels)',
-      close: 'Close'
+      close: 'Close', openSettings: 'Open settings'
     },
     zh: {
       details: '详情', collapse: '收起', dismiss: '忽略', dismissResult: '忽略结果', goToChat: '前往会话',
@@ -35,7 +35,7 @@
       activityAria: 'CapyReporter 动态', logAria: '会话动态详情', controlsAria: 'CapyReporter 控制；可拖动移动', menuAria: 'CapyReporter 控制',
       restoreBubble: '恢复气泡', openSite: '打开 DeepSeek Harness', usePagePet: '改用网页宠物', resetSize: '重置气泡大小',
       bubbleSizeAria: '调整气泡尺寸（像素）',
-      close: '关闭'
+      close: '关闭', openSettings: '打开设置'
     },
     es: {
       details: 'Detalles', collapse: 'Contraer', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir al chat',
@@ -48,7 +48,7 @@
       activityAria: 'Actividad de CapyReporter', logAria: 'Detalles de actividad de la sesión', controlsAria: 'Controles de CapyReporter; arrastra para mover', menuAria: 'Controles de CapyReporter',
       restoreBubble: 'Restaurar burbuja', openSite: 'Abrir DeepSeek Harness', usePagePet: 'Usar mascota de la página', resetSize: 'Restablecer tamaño',
       bubbleSizeAria: 'Cambiar tamaño de la burbuja (píxeles)',
-      close: 'Cerrar'
+      close: 'Cerrar', openSettings: 'Abrir ajustes'
     },
     hi: {
       details: 'विवरण', collapse: 'छोटा करें', dismiss: 'छिपाएँ', dismissResult: 'परिणाम छिपाएँ', goToChat: 'चैट खोलें',
@@ -61,7 +61,7 @@
       activityAria: 'CapyReporter गतिविधि', logAria: 'सत्र गतिविधि विवरण', controlsAria: 'CapyReporter नियंत्रण; खींचकर ले जाएँ', menuAria: 'CapyReporter नियंत्रण',
       restoreBubble: 'बबल बहाल करें', openSite: 'DeepSeek Harness खोलें', usePagePet: 'पेज पेट इस्तेमाल करें', resetSize: 'बबल आकार रीसेट करें',
       bubbleSizeAria: 'बबल का आकार बदलें (पिक्सेल)',
-      close: 'बंद करें'
+      close: 'बंद करें', openSettings: 'सेटिंग खोलें'
     },
     ar: {
       details: 'التفاصيل', collapse: 'طيّ', dismiss: 'تجاهل', dismissResult: 'تجاهل النتيجة', goToChat: 'الانتقال إلى المحادثة',
@@ -74,7 +74,7 @@
       activityAria: 'نشاط CapyReporter', logAria: 'تفاصيل نشاط الجلسة', controlsAria: 'عناصر تحكم CapyReporter؛ اسحب للتحريك', menuAria: 'عناصر تحكم CapyReporter',
       restoreBubble: 'استعادة الفقاعة', openSite: 'افتح DeepSeek Harness', usePagePet: 'استخدم حيوان الصفحة', resetSize: 'إعادة تعيين حجم الفقاعة',
       bubbleSizeAria: 'تغيير حجم الفقاعة (بكسل)',
-      close: 'إغلاق'
+      close: 'إغلاق', openSettings: 'فتح الإعدادات'
     },
     pt: {
       details: 'Detalhes', collapse: 'Recolher', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir para o chat',
@@ -87,7 +87,7 @@
       activityAria: 'Atividade do CapyReporter', logAria: 'Detalhes da atividade da sessão', controlsAria: 'Controles do CapyReporter; arraste para mover', menuAria: 'Controles do CapyReporter',
       restoreBubble: 'Restaurar balão', openSite: 'Abrir DeepSeek Harness', usePagePet: 'Usar mascote da página', resetSize: 'Redefinir tamanho',
       bubbleSizeAria: 'Redimensionar balão (pixels)',
-      close: 'Fechar'
+      close: 'Fechar', openSettings: 'Abrir configurações'
     },
     ru: {
       details: 'Подробности', collapse: 'Свернуть', dismiss: 'Скрыть', dismissResult: 'Скрыть результат', goToChat: 'Перейти в чат',
@@ -100,7 +100,7 @@
       activityAria: 'Активность CapyReporter', logAria: 'Подробности активности сессии', controlsAria: 'Управление CapyReporter; перетащите, чтобы переместить', menuAria: 'Управление CapyReporter',
       restoreBubble: 'Вернуть пузырь', openSite: 'Открыть DeepSeek Harness', usePagePet: 'Питомец на странице', resetSize: 'Сбросить размер',
       bubbleSizeAria: 'Изменить размер пузыря (пиксели)',
-      close: 'Закрыть'
+      close: 'Закрыть', openSettings: 'Открыть настройки'
     },
     ja: {
       details: '詳細', collapse: '折りたたむ', dismiss: '非表示', dismissResult: '結果を閉じる', goToChat: 'チャットを開く',
@@ -113,7 +113,7 @@
       activityAria: 'CapyReporter アクティビティ', logAria: 'セッションの詳細', controlsAria: 'CapyReporter の操作。ドラッグで移動', menuAria: 'CapyReporter の操作',
       restoreBubble: 'バブルを戻す', openSite: 'DeepSeek Harness を開く', usePagePet: 'ページのペットを使う', resetSize: 'バブルのサイズをリセット',
       bubbleSizeAria: 'バブルのサイズ変更（ピクセル）',
-      close: '閉じる'
+      close: '閉じる', openSettings: '設定を開く'
     },
     fr: {
       details: 'Détails', collapse: 'Réduire', dismiss: 'Masquer', dismissResult: 'Masquer le résultat', goToChat: 'Aller au chat',
@@ -126,7 +126,7 @@
       activityAria: 'Activité CapyReporter', logAria: 'Détails de l’activité de la session', controlsAria: 'Contrôles CapyReporter ; glissez pour déplacer', menuAria: 'Contrôles CapyReporter',
       restoreBubble: 'Restaurer la bulle', openSite: 'Ouvrir DeepSeek Harness', usePagePet: 'Utiliser la mascotte de la page', resetSize: 'Réinitialiser la taille',
       bubbleSizeAria: 'Redimensionner la bulle (pixels)',
-      close: 'Fermer'
+      close: 'Fermer', openSettings: 'Ouvrir les paramètres'
     },
     de: {
       details: 'Details', collapse: 'Einklappen', dismiss: 'Ausblenden', dismissResult: 'Ergebnis ausblenden', goToChat: 'Zum Chat',
@@ -139,7 +139,7 @@
       activityAria: 'CapyReporter-Aktivität', logAria: 'Details zur Sitzungsaktivität', controlsAria: 'CapyReporter-Steuerung; zum Verschieben ziehen', menuAria: 'CapyReporter-Steuerung',
       restoreBubble: 'Blase wiederherstellen', openSite: 'DeepSeek Harness öffnen', usePagePet: 'Pet der Seite verwenden', resetSize: 'Blasengröße zurücksetzen',
       bubbleSizeAria: 'Blasengröße ändern (Pixel)',
-      close: 'Schließen'
+      close: 'Schließen', openSettings: 'Einstellungen öffnen'
     }
   };
   const autoLocale = () => {
@@ -162,6 +162,7 @@
     el('menuRestore').textContent = t('restoreBubble');
     el('menuChat').textContent = t('goToChat');
     el('menuSite').textContent = t('openSite');
+    el('menuSettings').textContent = t('openSettings');
     el('menuReset').textContent = t('resetSize');
     el('menuHide').textContent = t('usePagePet');
     el('chatButton').textContent = t('goToChat');
@@ -391,6 +392,7 @@
     bridge.request('/desktop/navigate', { sessionId: id }).catch(showError);
   });
   el('menuSite').addEventListener('click', () => { menu.style.display = 'none'; bridge.openSite(); });
+  el('menuSettings').addEventListener('click', () => { menu.style.display = 'none'; bridge.request('/desktop/navigate', { settings: true }).catch(showError); });
   el('menuReset').addEventListener('click', () => { menu.style.display = 'none'; resetSize(); });
   el('menuHide').addEventListener('click', async () => { try { await bridge.request('/desktop/hide', {}); window.close(); } catch (error) { showError(error); } });
   document.addEventListener('pointerdown', event => { if (!event.target.closest('#img, #menu')) menu.style.display = 'none'; });
