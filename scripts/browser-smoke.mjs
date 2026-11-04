@@ -116,6 +116,8 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   assert.ok(Math.abs((actionsBox.y + actionsBox.height) - (pinnedBox.y + pinnedBox.height)) < 24, 'action buttons stick to the bottom of a resized bubble')
   const close = bubble.getByRole('button', { name: 'Close', exact: true })
   await close.waitFor()
+  const closeBox = await close.boundingBox()
+  assert.ok(closeBox.width >= 24 && closeBox.height >= 24, 'the close button is big enough to hit comfortably')
   assert.equal(await bubble.getByRole('button', { name: 'Dismiss', exact: true }).count(), 0, 'the bubble no longer carries a Dismiss action')
   await close.click()
   await bubble.waitFor({ state: 'hidden' })
