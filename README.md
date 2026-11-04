@@ -11,7 +11,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 - **Running subagents are visible while they work.** The headline names them (`⏳ 1 running · 2 subagents — <chat>`) and, while the main chat has no fresh assistant text, the collapsed detail reads `🤖 2 subagents running`; the count drops as they finish and their progress milestones take over. Localized throughout.
 - **Only the main chat claims a finished turn.** Delegated subagent runs never raise the green *Turn complete* tick for the parent chat: while a main chat is running the headline keeps showing it, and delegated finishes (`✅ Subagent finished`, `⚠️ Subagent failed`, `⏹ Subagent cancelled`) appear as progress milestones in the details. A main-chat result may only take the headline once no main chat is running.
 - Independent unread results for parallel sessions: starting another session does not erase a result. Up to 20 results are retained in memory for six hours.
-- Compact headlines and explicit **Details / Go to chat / Mute / Dismiss result** controls. Keyboard support and reduced-motion-safe styling.
+- Compact headlines and explicit **Details / Go to chat / Mute** controls, a top-right × close on the bubble, and a pet-menu *Open settings* shortcut. Keyboard support and reduced-motion-safe styling.
 - **Ten-language UI with a live switcher** (English, 中文, Español, हिन्दी, العربية, Português, Русский, 日本語, Français, Deutsch) that follows the browser/OS language by default, applies to the page pet and the desktop companion, and flips to right-to-left for Arabic. Every locale is copy-edited for natural phrasing — bubble actions, pet menu, settings rows and the desktop companion included — rather than a literal machine translation.
 - Optional away notifications: off by default, require both the plugin toggle and browser permission, and do not notify a focused page. Different open DSH tabs may each notify.
 
@@ -41,7 +41,8 @@ The page pet is hidden **only after** the companion has decoded its image, fetch
 | Click, right-click, or Enter/Space on pet controls | Open controls |
 | Details / Collapse | Toggle scrollable session details |
 | Go to chat | Open the session the headline refers to (running, else finished) in the current window via DSH workspace navigation; also in the pet menu |
-| Dismiss / Dismiss result | Always shown: hide the current bubble (new activity resurfaces it); after a run ends, acknowledge the result |
+| Pet menu → Open settings | Jump straight to the CapyReporter section of DSH settings |
+| × in the bubble's top-right corner | Close the current bubble (new activity resurfaces it); after a run ends it also acknowledges the result. The pet menu keeps *Dismiss result* |
 | Drag any bubble edge/corner, arrow keys on the corner handle, or Ctrl + wheel over the bubble | Resize the bubble (width 260–560, height 160–720 px), remembered per browser; buttons stay pinned to the bottom edge and the details area scrolls when the bubble is short |
 | Drag any edge/corner of the desktop bubble | Resize the always-on-top bubble; its window follows so the pet stays anchored above the bubble |
 | Double-click a resize handle, or **Reset bubble size** in the pet menu | Restore the default 360 px width and content-driven height |

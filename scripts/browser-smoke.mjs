@@ -17,7 +17,7 @@ const reports = join(root, 'reports')
 await mkdir(reports, { recursive: true })
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Isolated CapyReporter UI test</title></head><body style="font:14px system-ui;margin:24px;max-width:900px"><h1>CapyReporter integration fixture</h1><div id="app"></div><script src="/react.js"></script><script src="/react-dom.js"></script><script>
 const registered={}, meta={}, cleanup=[];
-const ctx={effect(f){cleanup.push(f())},get(name){return name==='uiWorkspace'?(window.__CapyUi||undefined):undefined},slots:{inject(_n,f){const r=f();if(r&&typeof r[Symbol.iterator]==='function')for(const d of r)cleanup.push(d)},register(m,component){if(!m||!m.name||!m.id)throw Error('bad slot registration');registered[m.id]=component;meta[m.id]=m}}};
+const ctx={effect(f){cleanup.push(f())},get(name){return name==='uiWorkspace'?(window.__CapyUi||undefined):undefined},slots:{inject(_n,f){const r=f();if(r&&typeof r[Symbol.iterator]==='function')for(const d of r)cleanup.push(d)},register(m,component){if(!m||!m.name||!m.id)throw Error('bad slot registration');registered[m.id]=component;meta[m.id]=m},entries(key){return key==='sidebar.settings'?[{store:{create(){return {actions:{openSection(id){window.__CapyOpenedSettings=id}}}}}}]:[]}}};
 window.__CapyUi={openSession(id){window.__CapyOpened=id}};
 window.__CapySlots=meta;
 window.__ModuleLoader__={load({factory}){factory(n=>{if(n==='react')return React;throw Error(n)}).apply(ctx);const root=ReactDOM.createRoot(document.getElementById('app'));root.render(React.createElement(React.Fragment,null,...Object.values(registered).map((C,i)=>React.createElement(C,{key:i}))));window.unmountPlugin=()=>{root.unmount();cleanup.reverse().forEach(f=>f&&f())}}};
@@ -57,6 +57,11 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   assert.equal(await pet.count(), 0, 'disabled pet must not flash during bootstrap')
   await settings.getByRole('button', { name: 'Show pet', exact: true }).click()
   await pet.waitFor({ state: 'visible' })
+  // The pet menu can bring the plugin's own settings section to the front.
+  await pet.click({ button: 'right' })
+  const menu = page.getByRole('group', { name: 'CapyReporter controls' })
+  await menu.getByRole('button', { name: 'Open settings', exact: true }).click()
+  assert.equal(await page.evaluate(() => window.__CapyOpenedSettings), 'dsh-capyreporter', 'the pet menu opens the CapyReporter settings section')
   const agent = { id: 'first', session }
   f.emit('agent/status', { agent, status: 'running' })
   f.emit('session/event', session, { type: 'turn/start', data: { turn: 1 } })
@@ -109,11 +114,12 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   const actionsBox = await bubble.locator('.dsh-capy-actions').boundingBox()
   const pinnedBox = await bubble.boundingBox()
   assert.ok(Math.abs((actionsBox.y + actionsBox.height) - (pinnedBox.y + pinnedBox.height)) < 24, 'action buttons stick to the bottom of a resized bubble')
-  const dismiss = bubble.getByRole('button', { name: 'Dismiss', exact: true })
-  await dismiss.waitFor()
-  await dismiss.click()
+  const close = bubble.getByRole('button', { name: 'Close', exact: true })
+  await close.waitFor()
+  assert.equal(await bubble.getByRole('button', { name: 'Dismiss', exact: true }).count(), 0, 'the bubble no longer carries a Dismiss action')
+  await close.click()
   await bubble.waitFor({ state: 'hidden' })
-  assert.equal((await f.get('/state')).snoozed, false, 'dismissing a running bubble must hide it without muting')
+  assert.equal((await f.get('/state')).snoozed, false, 'closing a running bubble must hide it without muting')
   for (const text of ['Checking', ' ', 'the real browser']) f.emit('session/event', session, { type: 'assistant/chunk', data: { step: 1, chunk: { type: 'text-delta', text } } })
   await page.getByText('Checking the real browser', { exact: true }).waitFor()
   await bubble.getByRole('button', { name: 'Details', exact: true }).click()
@@ -271,9 +277,9 @@ test('real Chromium: zh-CN locale localizes bubble, actions and settings', { tim
   await bubble.getByRole('button', { name: '前往会话', exact: true }).click()
   assert.equal(await page.evaluate(() => window.__CapyOpened), 'zh', '中文界面同样能前往对应会话')
   await bubble.getByRole('button', { name: '静音 30 分钟', exact: true }).waitFor()
-  await bubble.getByRole('button', { name: '忽略', exact: true }).click()
+  await bubble.getByRole('button', { name: '关闭', exact: true }).click()
   await bubble.waitFor({ state: 'hidden' })
-  assert.equal((await f.get('/state')).snoozed, false, '中文忽略同样只隐藏气泡，不得静音')
+  assert.equal((await f.get('/state')).snoozed, false, '中文关闭同样只隐藏气泡，不得静音')
   const settings = page.locator('.dsh-capy-section')
   await settings.getByText('悬浮宠物', { exact: true }).waitFor()
   await settings.getByText('状态气泡', { exact: true }).waitFor()
@@ -374,6 +380,8 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   const chatButton = page.locator('#chatButton')
   await chatButton.waitFor({ state: 'visible' })
   assert.equal((await chatButton.textContent()).trim(), 'Zum Chat', 'desktop bubble follows the host language')
+  assert.equal(await page.locator('#closeButton').getAttribute('aria-label'), 'Schließen', 'desktop close button follows the host language')
+  assert.equal(await page.locator('#dismissButton').count(), 0, 'desktop bubble no longer carries a Dismiss action')
   assert.equal(await page.locator('#bubble .rz').count(), 8, 'desktop bubble exposes every resize edge')
   const grip = page.locator('#bubble .rz-se')
   await grip.focus()

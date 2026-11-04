@@ -21,7 +21,8 @@
       disconnected: '⚠️ Reporter disconnected — retrying',
       activityAria: 'CapyReporter activity', logAria: 'Session activity details', controlsAria: 'CapyReporter controls; drag to move', menuAria: 'CapyReporter controls',
       restoreBubble: 'Restore bubble', openSite: 'Open DeepSeek Harness', usePagePet: 'Use page pet instead', resetSize: 'Reset bubble size',
-      bubbleSizeAria: 'Resize bubble (pixels)'
+      bubbleSizeAria: 'Resize bubble (pixels)',
+      close: 'Close'
     },
     zh: {
       details: '详情', collapse: '收起', dismiss: '忽略', dismissResult: '忽略结果', goToChat: '前往会话',
@@ -33,7 +34,8 @@
       disconnected: '⚠️ 报告器已断开 — 正在重试',
       activityAria: 'CapyReporter 动态', logAria: '会话动态详情', controlsAria: 'CapyReporter 控制；可拖动移动', menuAria: 'CapyReporter 控制',
       restoreBubble: '恢复气泡', openSite: '打开 DeepSeek Harness', usePagePet: '改用网页宠物', resetSize: '重置气泡大小',
-      bubbleSizeAria: '调整气泡尺寸（像素）'
+      bubbleSizeAria: '调整气泡尺寸（像素）',
+      close: '关闭'
     },
     es: {
       details: 'Detalles', collapse: 'Contraer', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir al chat',
@@ -45,7 +47,8 @@
       disconnected: '⚠️ Reportero desconectado — reintentando',
       activityAria: 'Actividad de CapyReporter', logAria: 'Detalles de actividad de la sesión', controlsAria: 'Controles de CapyReporter; arrastra para mover', menuAria: 'Controles de CapyReporter',
       restoreBubble: 'Restaurar burbuja', openSite: 'Abrir DeepSeek Harness', usePagePet: 'Usar mascota de la página', resetSize: 'Restablecer tamaño',
-      bubbleSizeAria: 'Cambiar tamaño de la burbuja (píxeles)'
+      bubbleSizeAria: 'Cambiar tamaño de la burbuja (píxeles)',
+      close: 'Cerrar'
     },
     hi: {
       details: 'विवरण', collapse: 'छोटा करें', dismiss: 'छिपाएँ', dismissResult: 'परिणाम छिपाएँ', goToChat: 'चैट खोलें',
@@ -57,7 +60,8 @@
       disconnected: '⚠️ रिपोर्टर डिस्कनेक्ट — पुनः प्रयास',
       activityAria: 'CapyReporter गतिविधि', logAria: 'सत्र गतिविधि विवरण', controlsAria: 'CapyReporter नियंत्रण; खींचकर ले जाएँ', menuAria: 'CapyReporter नियंत्रण',
       restoreBubble: 'बबल बहाल करें', openSite: 'DeepSeek Harness खोलें', usePagePet: 'पेज पेट इस्तेमाल करें', resetSize: 'बबल आकार रीसेट करें',
-      bubbleSizeAria: 'बबल का आकार बदलें (पिक्सेल)'
+      bubbleSizeAria: 'बबल का आकार बदलें (पिक्सेल)',
+      close: 'बंद करें'
     },
     ar: {
       details: 'التفاصيل', collapse: 'طيّ', dismiss: 'تجاهل', dismissResult: 'تجاهل النتيجة', goToChat: 'الانتقال إلى المحادثة',
@@ -69,7 +73,8 @@
       disconnected: '⚠️ انقطع المُبلّغ — إعادة المحاولة',
       activityAria: 'نشاط CapyReporter', logAria: 'تفاصيل نشاط الجلسة', controlsAria: 'عناصر تحكم CapyReporter؛ اسحب للتحريك', menuAria: 'عناصر تحكم CapyReporter',
       restoreBubble: 'استعادة الفقاعة', openSite: 'افتح DeepSeek Harness', usePagePet: 'استخدم حيوان الصفحة', resetSize: 'إعادة تعيين حجم الفقاعة',
-      bubbleSizeAria: 'تغيير حجم الفقاعة (بكسل)'
+      bubbleSizeAria: 'تغيير حجم الفقاعة (بكسل)',
+      close: 'إغلاق'
     },
     pt: {
       details: 'Detalhes', collapse: 'Recolher', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir para o chat',
@@ -81,7 +86,8 @@
       disconnected: '⚠️ Relator desconectado — tentando novamente',
       activityAria: 'Atividade do CapyReporter', logAria: 'Detalhes da atividade da sessão', controlsAria: 'Controles do CapyReporter; arraste para mover', menuAria: 'Controles do CapyReporter',
       restoreBubble: 'Restaurar balão', openSite: 'Abrir DeepSeek Harness', usePagePet: 'Usar mascote da página', resetSize: 'Redefinir tamanho',
-      bubbleSizeAria: 'Redimensionar balão (pixels)'
+      bubbleSizeAria: 'Redimensionar balão (pixels)',
+      close: 'Fechar'
     },
     ru: {
       details: 'Подробности', collapse: 'Свернуть', dismiss: 'Скрыть', dismissResult: 'Скрыть результат', goToChat: 'Перейти в чат',
@@ -93,7 +99,8 @@
       disconnected: '⚠️ Отчёт отключён — повторная попытка',
       activityAria: 'Активность CapyReporter', logAria: 'Подробности активности сессии', controlsAria: 'Управление CapyReporter; перетащите, чтобы переместить', menuAria: 'Управление CapyReporter',
       restoreBubble: 'Вернуть пузырь', openSite: 'Открыть DeepSeek Harness', usePagePet: 'Питомец на странице', resetSize: 'Сбросить размер',
-      bubbleSizeAria: 'Изменить размер пузыря (пиксели)'
+      bubbleSizeAria: 'Изменить размер пузыря (пиксели)',
+      close: 'Закрыть'
     },
     ja: {
       details: '詳細', collapse: '折りたたむ', dismiss: '非表示', dismissResult: '結果を閉じる', goToChat: 'チャットを開く',
@@ -105,7 +112,8 @@
       disconnected: '⚠️ レポーター切断 — 再接続中',
       activityAria: 'CapyReporter アクティビティ', logAria: 'セッションの詳細', controlsAria: 'CapyReporter の操作。ドラッグで移動', menuAria: 'CapyReporter の操作',
       restoreBubble: 'バブルを戻す', openSite: 'DeepSeek Harness を開く', usePagePet: 'ページのペットを使う', resetSize: 'バブルのサイズをリセット',
-      bubbleSizeAria: 'バブルのサイズ変更（ピクセル）'
+      bubbleSizeAria: 'バブルのサイズ変更（ピクセル）',
+      close: '閉じる'
     },
     fr: {
       details: 'Détails', collapse: 'Réduire', dismiss: 'Masquer', dismissResult: 'Masquer le résultat', goToChat: 'Aller au chat',
@@ -117,7 +125,8 @@
       disconnected: '⚠️ Rapporteur déconnecté — nouvelle tentative',
       activityAria: 'Activité CapyReporter', logAria: 'Détails de l’activité de la session', controlsAria: 'Contrôles CapyReporter ; glissez pour déplacer', menuAria: 'Contrôles CapyReporter',
       restoreBubble: 'Restaurer la bulle', openSite: 'Ouvrir DeepSeek Harness', usePagePet: 'Utiliser la mascotte de la page', resetSize: 'Réinitialiser la taille',
-      bubbleSizeAria: 'Redimensionner la bulle (pixels)'
+      bubbleSizeAria: 'Redimensionner la bulle (pixels)',
+      close: 'Fermer'
     },
     de: {
       details: 'Details', collapse: 'Einklappen', dismiss: 'Ausblenden', dismissResult: 'Ergebnis ausblenden', goToChat: 'Zum Chat',
@@ -129,7 +138,8 @@
       disconnected: '⚠️ Reporter getrennt — neuer Versuch',
       activityAria: 'CapyReporter-Aktivität', logAria: 'Details zur Sitzungsaktivität', controlsAria: 'CapyReporter-Steuerung; zum Verschieben ziehen', menuAria: 'CapyReporter-Steuerung',
       restoreBubble: 'Blase wiederherstellen', openSite: 'DeepSeek Harness öffnen', usePagePet: 'Pet der Seite verwenden', resetSize: 'Blasengröße zurücksetzen',
-      bubbleSizeAria: 'Blasengröße ändern (Pixel)'
+      bubbleSizeAria: 'Blasengröße ändern (Pixel)',
+      close: 'Schließen'
     }
   };
   const autoLocale = () => {
@@ -156,6 +166,8 @@
     el('menuHide').textContent = t('usePagePet');
     el('chatButton').textContent = t('goToChat');
     el('muteButton').textContent = t('muteFor', { n: muteMinutes });
+    el('closeButton').setAttribute('aria-label', t('close'));
+    el('closeButton').title = t('close');
     const grip = bubble.querySelector('.rz-se');
     grip.setAttribute('aria-label', t('bubbleSizeAria'));
     grip.setAttribute('aria-valuetext', Math.round(bubbleSize.w) + ' × ' + (bubbleSize.h ? Math.round(bubbleSize.h) : 'auto') + 'px');
@@ -236,7 +248,6 @@
       .map(row => row.title + ((row.lines && row.lines.length) ? '\n' + row.lines.join('\n') : '') + (row.preview ? '\n' + row.preview : '')).join('\n\n');
     el('detailsButton').textContent = expanded ? t('collapse') : t('details');
     el('detailsButton').setAttribute('aria-expanded', String(expanded));
-    el('dismissButton').textContent = done && !roots ? t('dismissResult') : t('dismiss');
     el('muteButton').textContent = t('muteFor', { n: muteMinutes });
     chatButton.style.display = sessionId() ? '' : 'none';
     bubble.style.display = 'block';
@@ -282,9 +293,9 @@
     // The page half consumes this and focuses the session in the browser window.
     bridge.request('/desktop/navigate', { sessionId: id }).catch(showError);
   });
-  el('dismissButton').addEventListener('click', () => {
-    // Dismiss is always available: it hides the current bubble; when a run has
-    // ended it also clears the result on the host.
+  el('closeButton').addEventListener('click', () => {
+    // Closing hides the current bubble; when a run has ended it also clears the
+    // result on the host, and a running chat simply resurfaces on new activity.
     if (activity?.completed && !(activity?.runningCount)) bridge.request('/dismiss', { at: activity.completed.at }).catch(showError);
     suppressed = sig; expanded = false; bubble.style.display = 'none'; refit();
   });
