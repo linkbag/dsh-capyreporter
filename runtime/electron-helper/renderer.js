@@ -358,7 +358,7 @@
     menuOpen = menu.style.display !== 'flex';
     menu.style.display = menuOpen ? 'flex' : 'none';
     img.setAttribute('aria-expanded', String(menuOpen));
-    if (menuOpen) el('menuRestore').focus();
+    if (menuOpen) { el('menuRestore').focus(); bridge.focusWindow(); }
     refit();
   }
   function closeMenu() {
@@ -368,9 +368,19 @@
     img.setAttribute('aria-expanded', 'false');
     refit();
   }
+  // The menu lives in its own always-on-top window, so a click anywhere else on
+  // the screen moves focus away and fires blur. A click inside this window but
+  // outside the menu is caught by the pointerdown listener instead.
+  let suppressToggle = false;
+  window.addEventListener('blur', () => { if (menuOpen) closeMenu(); });
+  document.addEventListener('pointerdown', event => {
+    if (!menuOpen || menu.contains(event.target)) return;
+    suppressToggle = true;
+    closeMenu();
+  }, true);
   img.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleMenu(); } });
   document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeMenu(); expanded = false; img.focus(); render(); } });
-  img.addEventListener('contextmenu', event => { event.preventDefault(); toggleMenu(); });
+  img.addEventListener('contextmenu', event => { event.preventDefault(); if (suppressToggle) { suppressToggle = false; return; } toggleMenu(); });
   img.addEventListener('dblclick', () => bridge.openSite());
   img.addEventListener('pointerdown', event => {
     if (event.button !== 0) return;
@@ -383,7 +393,7 @@
     if (Math.hypot(event.screenX - pointer.x, event.screenY - pointer.y) > 5) { pointer.moved = true; dragging = true; bridge.dragStart(); }
   });
   function endDrag() { if (dragging) bridge.dragEnd(); dragging = false; pointer = null; }
-  img.addEventListener('pointerup', () => { const clicked = pointer && !pointer.moved; endDrag(); if (clicked) toggleMenu(); });
+  img.addEventListener('pointerup', () => { const clicked = pointer && !pointer.moved; endDrag(); if (!clicked) return; if (suppressToggle) { suppressToggle = false; return; } toggleMenu(); });
   window.addEventListener('pointercancel', endDrag);
   window.addEventListener('blur', endDrag);
   window.addEventListener('mousemove', event => {

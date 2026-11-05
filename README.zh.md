@@ -22,7 +22,7 @@ DeepSeek Harness Web 的本地任务播报宠物：页面内悬浮水豚，以�
 dsh plugin --profile web add dsh-capyreporter
 ```
 
-0.6.23 已重新验证 **DeepSeek Harness 0.2.1-alpha.1**（路由、slots、客户端 bundle 分发与 agent/session 事件）。peerDependencies 只有 `@deepseek-ai/cordis` 与 `react`（由 DSH 提供给插件），不再锁定任何 DSH 包版本范围。客户端更新后刷新页面；**宿主代码更新需重新激活插件或重启 DSH，仅刷新不会替换已加载的宿主模块**。
+0.6.24 已重新验证 **DeepSeek Harness 0.2.1-alpha.1**（路由、slots、客户端 bundle 分发与 agent/session 事件）。peerDependencies 只有 `@deepseek-ai/cordis` 与 `react`（由 DSH 提供给插件），不再锁定任何 DSH 包版本范围。客户端更新后刷新页面；**宿主代码更新需重新激活插件或重启 DSH，仅刷新不会替换已加载的宿主模块**。
 
 宠物跨窗口置顶默认开启：未保存偏好设置的新安装会直接启动置顶宠物，以跨窗口浮层显示；选择「仅用网页宠物」即可关闭。
 

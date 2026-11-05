@@ -49,6 +49,9 @@ ipcMain.handle('capyreporter:request', async (event, route, body) => {
 });
 const on = (channel, handler) => ipcMain.on('capyreporter:' + channel, (event, value) => { if (trusted(event)) handler(value); });
 on('interactive', value => { if (typeof value === 'boolean') win.setIgnoreMouseEvents(!value, { forward: true }); });
+// The pet menu dismisses itself when the window loses focus (a click anywhere
+// outside it), so focusing the companion while the menu is open is required.
+on('focus', () => { if (win && !win.isDestroyed()) win.focus(); });
 on('open-site', () => { shell.openExternal(base).catch(error => console.error('[capyreporter] Open site failed:', error.message)); });
 on('resize', size => {
   const w = size?.w, h = size?.h;

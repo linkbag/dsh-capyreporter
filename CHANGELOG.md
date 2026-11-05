@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.24 (2026-11-04) — the always-on-top pet menu dismisses on an outside click
+
+- **Clicking anywhere outside the companion menu now closes it.** The menu lives in its own always-on-top window, so opening it now focuses that window and the menu closes on blur — a click on any other app, the DSH page, the desktop, or the taskbar. Clicks inside the companion window but outside the menu close it too (and no longer re-toggle it), and Escape still works.
+
+- Regression coverage: the Electron suite opens the menu with the bubble closed, dispatches a window blur and asserts the menu hides, then reopens and closes it with Escape; unit tests stay at 66, smoke 4/4.
+
 ## 0.6.23 (2026-11-04) — the desktop menu always fits its window
 
 - **The always-on-top pet menu no longer gets clipped.** The companion window was sized only for the pet and its bubble, while the menu grows upward from the window's bottom-right corner — with a small pet and the bubble closed, the first entries (including *Open settings*) sat above the window's top edge. Opening the menu now refits the window to the measured menu height (bottom edge anchored, still capped by the screen), closing it shrinks back, and the menu falls back to internal scrolling if the screen is too short. The page pet menu got the same viewport-height scroll guard.

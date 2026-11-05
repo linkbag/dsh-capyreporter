@@ -428,6 +428,12 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   const menuBox = await page.locator('#menu').boundingBox()
   const viewport = await page.evaluate(() => ({ w: window.innerWidth, h: window.innerHeight }))
   assert.ok(menuBox.y >= 0 && menuBox.y + menuBox.height <= viewport.h + 1, 'the desktop menu fits inside the whole window')
+  // A click anywhere outside the companion window blurs it and dismisses the menu.
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')))
+  await page.locator('#menu').waitFor({ state: 'hidden' })
+  await page.locator('#img').focus()
+  await page.keyboard.press('Enter')
+  await page.locator('#menu').waitFor({ state: 'visible' })
   await page.keyboard.press('Escape')
   await page.locator('#menu').waitFor({ state: 'hidden' })
   await page.screenshot({ path: join(reports, 'electron-smoke.png') })
