@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.25 (2026-11-04) — Go to chat really opens the chat
+
+- **The always-on-top pet's *Go to chat* now opens the DSH page at that session.** Besides the in-page hand-off (which a hidden tab only polls about once a minute), the companion asks the host to open the browser at `/?capyreporter=<session>`; the page consumes the hint through the workspace service, then strips it from the URL so a reload stays put. The helper builds that URL from its validated loopback origin — the renderer never chooses the origin — and the hint is only read from the page's own query string.
+
+- Regression coverage: the Chromium suite loads the page with a session hint, asserts the session is opened and the hint removed; the Electron suite asserts the helper requests the hinted URL (browser launch is stubbed in tests). Unit tests stay at 66, smoke 4/4.
+
 ## 0.6.24 (2026-11-04) — the always-on-top pet menu dismisses on an outside click
 
 - **Clicking anywhere outside the companion menu now closes it.** The menu lives in its own always-on-top window, so opening it now focuses that window and the menu closes on blur — a click on any other app, the DSH page, the desktop, or the taskbar. Clicks inside the companion window but outside the menu close it too (and no longer re-toggle it), and Escape still works.

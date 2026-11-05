@@ -294,7 +294,9 @@
   el('chatButton').addEventListener('click', () => {
     const id = sessionId();
     if (!id) return;
-    // The page half consumes this and focuses the session in the browser window.
+    // The page half consumes /desktop/navigate; opening the browser with a
+    // session hint also works when the DSH tab is hidden (throttled timers).
+    bridge.openChat(id);
     bridge.request('/desktop/navigate', { sessionId: id }).catch(showError);
   });
   el('closeButton').addEventListener('click', () => {
@@ -415,6 +417,7 @@
     closeMenu();
     const id = sessionId();
     if (!id) return;
+    bridge.openChat(id);
     bridge.request('/desktop/navigate', { sessionId: id }).catch(showError);
   });
   el('menuSite').addEventListener('click', () => { closeMenu(); bridge.openSite(); });

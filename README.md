@@ -21,7 +21,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 dsh plugin --profile web add dsh-capyreporter
 ```
 
-0.6.24 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). The only peer dependencies are `@deepseek-ai/cordis` and `react`, which DSH supplies to the plugin; no DSH package version range is pinned. Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
+0.6.25 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). The only peer dependencies are `@deepseek-ai/cordis` and `react`, which DSH supplies to the plugin; no DSH package version range is pinned. Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
 
 ### Optional desktop companion
 
@@ -41,7 +41,7 @@ The page pet is hidden **only after** the companion has decoded its image, fetch
 | Click, right-click, or Enter/Space on pet controls | Open controls |
 | Click anywhere outside an open menu (or press Escape) | Dismiss the pet menu — in the page pet and in the always-on-top companion |
 | Details / Collapse | Toggle scrollable session details |
-| Go to chat | Open the session the headline refers to (running, else finished) in the current window via DSH workspace navigation; also in the pet menu |
+| Go to chat | Open the session the headline refers to (running, else finished) via DSH workspace navigation; also in the pet menu. In the always-on-top companion it also opens/focuses the DSH page in your browser at that session |
 | Pet menu → Open settings | Jump straight to the CapyReporter section of DSH settings (also in the desktop companion menu) |
 | Pet menu → Enable / Retry always-on-top pet | Start the always-on-top companion, or retry it after a failed start, without leaving the page pet |
 | × in the bubble's top-right corner | Close the current bubble (new activity resurfaces it); after a run ends it also acknowledges the result. The pet menu keeps *Dismiss result* |

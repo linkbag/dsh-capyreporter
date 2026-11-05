@@ -42,7 +42,7 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   const f = await fixture(t, { enabled: false }, {
     sessions: { get: id => id === 'child' ? child : { ...session, id } }, workspaceRegistry: { list: () => [{ path: 'C:/test-project', title: 'Audit project' }] },
     sessionTitle: { get: s => ({ title: s.id === 'first' ? 'Reporting audit' : 'Parallel task' }) },
-  }, (req, res) => { const asset = assets.get(req.url); res.writeHead(asset ? 200 : 404, { 'content-type': asset?.[0] || 'text/plain' }); res.end(asset?.[1] || 'Not found') })
+  }, (req, res) => { const asset = assets.get(req.url.split('?')[0]); res.writeHead(asset ? 200 : 404, { 'content-type': asset?.[0] || 'text/plain' }); res.end(asset?.[1] || 'Not found') })
   const browser = await chromium.launch({ channel: process.env.DSH_TEST_BROWSER_CHANNEL || 'chrome', headless: true })
   t.after(() => browser.close())
   const context = await browser.newContext({ viewport: { width: 1100, height: 900 }, reducedMotion: 'reduce' })
@@ -186,6 +186,12 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   })
   await page.waitForFunction(() => window.__CapyOpened === 'second', null, { timeout: 8000 })
   await page.unroute('**/dsh-capyreporter/state')
+  // The desktop companion can also open the page with a session hint, which is
+  // consumed once and stripped so a later reload does not jump again.
+  await page.goto(f.base + '/?capyreporter=third')
+  await page.waitForFunction(() => window.__CapyOpened === 'third', null, { timeout: 8000 })
+  assert.equal(new URL(page.url()).search, '', 'the session hint is removed after it is used')
+  await bubble.waitFor()
   // A settings hand-off from the desktop companion is consumed the same way.
   await page.route('**/dsh-capyreporter/state', async route => {
     const response = await route.fetch(), body = await response.json()
@@ -274,7 +280,7 @@ test('real Chromium: zh-CN locale localizes bubble, actions and settings', { tim
   const f = await fixture(t, { enabled: true }, {
     sessions: { get: id => ({ ...session, id }) }, workspaceRegistry: { list: () => [{ path: 'C:/test-project', title: 'Audit project' }] },
     sessionTitle: { get: () => ({ title: '翻译检查' }) },
-  }, (req, res) => { const asset = assets.get(req.url); res.writeHead(asset ? 200 : 404, { 'content-type': asset?.[0] || 'text/plain' }); res.end(asset?.[1] || 'Not found') })
+  }, (req, res) => { const asset = assets.get(req.url.split('?')[0]); res.writeHead(asset ? 200 : 404, { 'content-type': asset?.[0] || 'text/plain' }); res.end(asset?.[1] || 'Not found') })
   const browser = await chromium.launch({ channel: process.env.DSH_TEST_BROWSER_CHANNEL || 'chrome', headless: true })
   t.after(() => browser.close())
   const context = await browser.newContext({ locale: 'zh-CN', viewport: { width: 1100, height: 900 }, reducedMotion: 'reduce' })
@@ -367,7 +373,7 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   t.after(() => new Promise(resolve => { server.closeAllConnections(); server.close(resolve) }))
   const base = 'http://127.0.0.1:' + server.address().port
-  const app = await electron.launch({ executablePath: electronPath, args: [join(root, 'runtime/electron-helper/main.js')], env: helperEnv(process.env, base, token), timeout: 30_000 })
+  const app = await electron.launch({ executablePath: electronPath, args: [join(root, 'runtime/electron-helper/main.js')], env: { ...helperEnv(process.env, base, token), DSH_CAPYREP_NO_BROWSER: '1' }, timeout: 30_000 })
   t.after(async () => { try { await app.close() } catch {} })
   const page = await app.firstWindow(), errors = []
   page.on('pageerror', error => errors.push(error.message))
@@ -417,6 +423,8 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   await chatButton.click()
   for (let i = 0; i < 40 && navigated.at(-1)?.sessionId !== 'desk'; i++) await page.waitForTimeout(50)
   assert.deepEqual(navigated.at(-1), { sessionId: 'desk' }, 'Go to chat asks the page half to open the session')
+  const openedChat = await app.evaluate(() => globalThis.__capyOpenChat || '')
+  assert.match(openedChat, /\?capyreporter=desk$/, 'Go to chat also opens the browser at the session hint')
   // The menu is anchored to the window's bottom-right corner, so the window must
   // grow for it: a window sized only for the pet used to clip the first entries.
   await page.locator('#closeButton').click()

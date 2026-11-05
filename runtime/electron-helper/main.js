@@ -53,6 +53,16 @@ on('interactive', value => { if (typeof value === 'boolean') win.setIgnoreMouseE
 // outside it), so focusing the companion while the menu is open is required.
 on('focus', () => { if (win && !win.isDestroyed()) win.focus(); });
 on('open-site', () => { shell.openExternal(base).catch(error => console.error('[capyreporter] Open site failed:', error.message)); });
+// The page half consumes /desktop/navigate, but a hidden DSH tab throttles its
+// timers, so also hand the browser a URL that opens the session on load. The
+// session id is validated here; the renderer never chooses the origin.
+on('open-chat', id => {
+  const sessionId = typeof id === 'string' ? id.trim().slice(0, 200) : '';
+  if (!sessionId) return;
+  const url = base + '/?capyreporter=' + encodeURIComponent(sessionId);
+  if (process.env.DSH_CAPYREP_NO_BROWSER === '1') { globalThis.__capyOpenChat = url; return; }
+  shell.openExternal(url).catch(error => console.error('[capyreporter] Open chat failed:', error.message));
+});
 on('resize', size => {
   const w = size?.w, h = size?.h;
   if (!Number.isInteger(w) || !Number.isInteger(h) || w < 80 || h < 80 || w > 1600 || h > 1600) return;
