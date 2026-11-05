@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const bad = []
+const artifacts = []
 
 async function walk(dir) {
   const entries = await fs.readdir(dir, { withFileTypes: true })
@@ -14,6 +15,10 @@ async function walk(dir) {
     if (e.name === 'node_modules' || e.name === '.git') continue
     if (e.name.endsWith('.png') || e.name.endsWith('.tgz')) continue
     const p = join(dir, e.name)
+    if (e.name.startsWith('.dsh-ops-update-') && e.name.endsWith('.lock')) {
+      artifacts.push(relative(root, p))
+      continue
+    }
     if (e.isDirectory()) {
       await walk(p)
       continue
@@ -24,6 +29,10 @@ async function walk(dir) {
 }
 
 await walk(root)
+if (artifacts.length) {
+  console.error('Editor lock artifacts must be removed before packing:\n  ' + artifacts.join('\n  '))
+  process.exit(1)
+}
 if (bad.length) {
   console.error('UTF-8 BOM found in package files (would break DSH manifest parsing):\n  ' + bad.join('\n  '))
   process.exit(1)

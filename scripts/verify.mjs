@@ -16,7 +16,7 @@ if (!host.inject.includes('webServer')) problems.push('host must inject webServe
 
 const sources = ['lib/index.js', 'lib/client.js', 'lib/activity.js', 'lib/security.js',
   'runtime/electron-helper/main.js', 'runtime/electron-helper/preload.js',
-  'runtime/electron-helper/renderer.js', 'runtime/electron-helper/policy.cjs']
+  'runtime/electron-helper/renderer.js', 'runtime/electron-helper/policy.cjs', 'runtime/electron-helper/geometry.cjs']
 for (const f of [...sources, 'cordis.patch.yml', 'assets/capybara.png', 'runtime/electron-helper/index.html', 'runtime/electron-helper/package.json']) {
   if (!existsSync(join(root, f))) problems.push('missing file: ' + f)
 }

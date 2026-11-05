@@ -17,7 +17,7 @@ const reports = join(root, 'reports')
 await mkdir(reports, { recursive: true })
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Isolated CapyReporter UI test</title></head><body style="font:14px system-ui;margin:24px;max-width:900px"><h1>CapyReporter integration fixture</h1><div id="app"></div><script src="/react.js"></script><script src="/react-dom.js"></script><script>
 const registered={}, meta={}, cleanup=[];
-const ctx={effect(f){cleanup.push(f())},get(name){return name==='uiWorkspace'?(window.__CapyUi||undefined):undefined},slots:{inject(_n,f){const r=f();if(r&&typeof r[Symbol.iterator]==='function')for(const d of r)cleanup.push(d)},register(m,component){if(!m||!m.name||!m.id)throw Error('bad slot registration');registered[m.id]=component;meta[m.id]=m},entries(key){return key==='sidebar.settings'?[{store:{create(){return {actions:{openSection(id){window.__CapyOpenedSettings=id}}}}}}]:[]}}};
+const ctx={effect(f){cleanup.push(f())},get(name){return name==='uiWorkspace'?(window.__CapyUi||undefined):undefined},slots:{inject(_n,f){const r=f();if(r&&typeof r[Symbol.iterator]==='function')for(const d of r)cleanup.push(d)},register(m,component){if(!m||!m.name||!m.id)throw Error('bad slot registration');registered[m.id]=component;meta[m.id]=m},entries(key){return key==='sidebar.settings'?[{store:{create(){return {actions:{openSection(id){window.__CapySettingsAttempts=(window.__CapySettingsAttempts||0)+1;if(window.__CapyFailSettings){window.__CapyFailSettings--;throw Error('Settings not ready')}window.__CapyOpenedSettings=id;window.__CapySettingsCount=(window.__CapySettingsCount||0)+1}}}}}}]:[]}}};
 window.__CapyUi={openSession(id){window.__CapyOpened=id}};
 window.__CapySlots=meta;
 window.__ModuleLoader__={load({factory}){factory(n=>{if(n==='react')return React;throw Error(n)}).apply(ctx);const root=ReactDOM.createRoot(document.getElementById('app'));root.render(React.createElement(React.Fragment,null,...Object.values(registered).map((C,i)=>React.createElement(C,{key:i}))));window.unmountPlugin=()=>{root.unmount();cleanup.reverse().forEach(f=>f&&f())}}};
@@ -142,6 +142,13 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   await page.screenshot({ path: join(reports, 'browser-smoke.png'), fullPage: true })
   const cancelled = (await f.get('/activity')).completed
   assert.match(cancelled.label, /cancelled/)
+  await close.click()
+  await bubble.waitFor({ state: 'hidden' })
+  assert.equal((await f.get('/activity')).completed.at, cancelled.at, 'closing a different live chat must not acknowledge an older result')
+  await pet.click({ button: 'right' })
+  await menu.getByRole('button', { name: 'Restore bubble', exact: true }).click()
+  await bubble.waitFor()
+  await bubble.getByRole('button', { name: 'Details', exact: true }).click()
   await f.post('/dismiss', { at: cancelled.at })
   assert.equal((await f.get('/activity')).completed, null)
   // A delegated session finishing never claims the whole chat completed; it is
@@ -178,25 +185,60 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   await language.selectOption('en')
   await bubbleEl.getByRole('button', { name: 'Go to chat', exact: true }).waitFor()
   assert.equal(await bubbleEl.getAttribute('aria-label'), 'CapyReporter activity')
-  // The page half consumes a one-shot desktop navigation request.
+  // Desktop hand-offs retry callbacks and acknowledgements, independently of
+  // unrelated /activity failures. Reset the earlier menu sentinel: the old test
+  // passed without executing a hand-off at all because it reused that sentinel.
+  await page.evaluate(() => { window.__CapyOpenedSettings = null; window.__CapySettingsCount = 0; window.__CapySettingsAttempts = 0; window.__CapyFailSettings = 1 })
+  const navigation = { id: 'smoke-settings-command', kind: 'settings', at: Date.now() }
+  let acknowledged = false, ackAttempts = 0, activityFailures = 0
+  await page.route('**/dsh-capyreporter/navigate/ack', async route => {
+    assert.equal(route.request().postDataJSON().id, navigation.id)
+    if (++ackAttempts === 1) return route.fulfill({ status: 503, json: { error: 'Lost acknowledgement' } })
+    acknowledged = true
+    await route.fulfill({ json: { ok: true } })
+  })
   await page.route('**/dsh-capyreporter/state', async route => {
     const response = await route.fetch(), body = await response.json()
-    if (!body.navigate) body.navigate = { sessionId: 'second', at: Date.now() }
+    body.navigate = acknowledged ? null : navigation
     await route.fulfill({ response, json: body })
   })
-  await page.waitForFunction(() => window.__CapyOpened === 'second', null, { timeout: 8000 })
-  await page.unroute('**/dsh-capyreporter/state')
-  // A settings hand-off from the desktop companion is consumed the same way.
-  await page.route('**/dsh-capyreporter/state', async route => {
-    const response = await route.fetch(), body = await response.json()
-    if (!body.navigate) body.navigate = { kind: 'settings', at: Date.now() }
-    await route.fulfill({ response, json: body })
+  await page.route('**/dsh-capyreporter/activity', async route => {
+    if (!activityFailures++) return route.fulfill({ status: 503, json: { error: 'Transient activity failure' } })
+    await route.continue()
   })
-  await page.waitForFunction(() => window.__CapyOpenedSettings === 'dsh-capyreporter', null, { timeout: 8000 })
+  const wake = () => page.evaluate(() => window.dispatchEvent(new Event('focus')))
+  await wake()
+  await page.waitForFunction(() => window.__CapySettingsAttempts === 1)
+  await wake()
+  await page.waitForFunction(() => window.__CapySettingsCount === 1)
+  await wake()
+  await settings.getByText(/Transient activity failure/).waitFor()
+  assert.equal(ackAttempts, 2)
+  assert.equal(await page.evaluate(() => window.__CapySettingsAttempts), 2, 'a failed callback retries, a lost ack does not re-execute')
+  assert.equal(await page.evaluate(() => window.__CapyOpenedSettings), 'dsh-capyreporter')
   await page.unroute('**/dsh-capyreporter/state')
+  await page.unroute('**/dsh-capyreporter/activity')
+  await page.unroute('**/dsh-capyreporter/navigate/ack')
+  await wake()
+  await settings.getByText('Connected · desktop off', { exact: true }).waitFor()
+  assert.equal(await page.evaluate(() => window.__CapySettingsCount), 1, 'the hand-off executes once after recovery')
   await bubble.getByRole('button', { name: 'Mute 30 min', exact: true }).click()
   await bubble.waitFor({ state: 'hidden' })
   assert.equal((await f.get('/state')).snoozed, true)
+  await pet.waitFor({ state: 'visible' })
+  const milestones = value => value.running.map(({ id, preview, lines }) => ({ id, preview, lines }))
+  const unchanged = milestones(await f.get('/activity'))
+  await settings.getByRole('button', { name: 'Unmute', exact: true }).click()
+  await bubble.waitFor({ state: 'visible' })
+  assert.deepEqual(milestones(await f.get('/activity')), unchanged, 'unmute restores the same activity without needing a new event')
+  await bubble.getByRole('button', { name: 'Mute 30 min', exact: true }).click()
+  await bubble.waitFor({ state: 'hidden' })
+  await pet.click({ button: 'right' })
+  await menu.getByRole('button', { name: 'Restore bubble', exact: true }).click()
+  await bubble.waitFor({ state: 'visible' })
+  assert.equal((await f.get('/state')).snoozed, false, 'the pet remains accessible so Restore can end mute')
+  await bubble.getByRole('button', { name: 'Mute 30 min', exact: true }).click()
+  await bubble.waitFor({ state: 'hidden' })
   f.emit('session/event', other, { type: 'tool/call', data: { name: 'read' } })
   await page.waitForTimeout(1500)
   assert.equal(await bubble.count(), 0, 'snooze keeps the bubble hidden across activity changes')
@@ -351,6 +393,12 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
     requested.push(req.url)
     if (!role || !alive) { req.resume(); res.writeHead(role ? 503 : 403); return res.end('{}') }
     if (req.url === '/dsh-capyreporter/image') { res.writeHead(200, { 'content-type': 'image/png' }); return res.end(artwork) }
+    if (req.url.endsWith('/snooze')) {
+      let body = ''
+      req.on('data', chunk => { body += chunk })
+      req.on('end', () => { state.snoozed = JSON.parse(body).minutes > 0; res.setHeader('content-type', 'application/json'); res.end('{"ok":true}') })
+      return
+    }
     if (req.url.endsWith('/desktop/navigate')) {
       let body = ''
       req.on('data', chunk => { body += chunk })
@@ -382,9 +430,30 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   const capLeak = await page.evaluate(() => JSON.stringify(Object.keys(window.petBridge)))
   assert.ok(!capLeak.includes(token))
   await assert.rejects(page.evaluate(() => window.petBridge.request('https://evil.example')), /not allowed|Unsupported/)
+  // Heartbeat/readiness can arrive before Chromium receives the native resize.
+  // Wait for the renderer's actual requested fit, not a stale viewport snapshot.
+  const logical = await page.evaluate(() => ({ w: Math.round(document.getElementById('bubble').getBoundingClientRect().width) + 24,
+    h: Math.round(parseFloat(document.getElementById('img').style.height)) + Math.round(document.getElementById('bubble').getBoundingClientRect().height) + 12 }))
+  await page.waitForFunction(size => Math.abs(innerWidth - size.w) <= 1 && Math.abs(innerHeight - size.h) <= 1, logical)
   const bounds = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds())
-  for (let i = 0; i < 4; i++) await page.evaluate(b => window.petBridge.resize({ w: b.width, h: b.height }), bounds)
-  assert.deepEqual(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds()), bounds, 'same-size fitting must not move the window')
+  for (let i = 0; i < 4; i++) await page.evaluate(size => window.petBridge.resize(size), logical)
+  assert.deepEqual(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds()), bounds, 'same logical size must not round-trip through outward-rounded native bounds')
+  // Exercise REAL main drag IPC/timers on the native display. A synthetic cursor
+  // keeps this deterministic without moving the user's physical mouse.
+  await app.evaluate(({ screen, BrowserWindow }) => {
+    const b = BrowserWindow.getAllWindows()[0].getBounds()
+    const original = screen.getCursorScreenPoint
+    let reads = 0
+    screen.getCursorScreenPoint = () => ({ x: reads++ ? 100_000 : b.x, y: b.y })
+    globalThis.__restoreSmokeCursor = () => { screen.getCursorScreenPoint = original }
+  })
+  await page.evaluate(() => window.petBridge.dragStart())
+  await page.waitForTimeout(250)
+  const edge = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds())
+  await page.waitForTimeout(600)
+  assert.deepEqual(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds()), edge, 'holding against the right edge must not grow the window or walk its limit left')
+  await page.evaluate(() => window.petBridge.dragEnd())
+  await app.evaluate(() => { globalThis.__restoreSmokeCursor(); delete globalThis.__restoreSmokeCursor })
   const fit = await page.locator('#img').evaluate(img => ({ actual: img.getBoundingClientRect().height, expected: parseFloat(img.style.height) }))
   assert.ok(Math.abs(fit.actual - fit.expected) < 1, 'actual artwork is not clamped by its own viewport')
   await page.locator('#img').focus(); await page.keyboard.press('Enter')
@@ -396,6 +465,20 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   assert.equal(await page.locator('#menuChat').count(), 0, 'the desktop menu has no Go to chat entry')
   assert.equal(await page.locator('#closeButton').getAttribute('aria-label'), 'Schließen', 'desktop close button follows the host language')
   assert.equal(await page.locator('#dismissButton').count(), 0, 'desktop bubble no longer carries a Dismiss action')
+  await page.locator('#muteButton').click()
+  await page.waitForFunction(() => document.getElementById('bubble').style.display === 'none')
+  await page.waitForFunction(async () => (await window.petBridge.request('/state')).snoozed)
+  // Expiry/unmute changes only snooze, never the activity signature.
+  state.snoozed = false
+  await page.waitForFunction(() => document.getElementById('bubble').style.display !== 'none', null, { timeout: 8000 })
+  const liveRows = activity.running
+  activity.running = []; activity.runningCount = 0; activity.subagentCount = 0
+  for (const [language, label] of [['zh', '✅ 本轮已完成'], ['de', '✅ Durchlauf abgeschlossen']]) {
+    state.language = language
+    await page.waitForFunction(expected => document.getElementById('bubbleHead').textContent.startsWith(expected), label, { timeout: 8000 })
+  }
+  activity.running = liveRows; activity.runningCount = 1; activity.subagentCount = 1
+  await page.waitForFunction(() => document.getElementById('bubbleHead').textContent.includes('1 Subagent'), null, { timeout: 8000 })
   await page.locator('#img').focus()
   await page.keyboard.press('Enter')
   await page.locator('#menu').waitFor({ state: 'visible' })

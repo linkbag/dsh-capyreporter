@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { apply } from '../../lib/index.js'
 
-export async function fixture(t, initial = {}, services = {}, fallback) {
+export async function fixture(t, initial = {}, services = {}, fallback, applyPlugin = apply) {
   const home = await mkdtemp(join(tmpdir(), 'capyreporter-test-'))
   // Tests default to a page-only pet so no suite accidentally spawns Electron; a test that
   // wants the plugin's own default simply omits the key from `initial` and disables the pet.
@@ -34,7 +34,7 @@ export async function fixture(t, initial = {}, services = {}, fallback) {
   }
   const previous = process.env.DSH_HOME
   process.env.DSH_HOME = home
-  try { apply(ctx) } finally { if (previous === undefined) delete process.env.DSH_HOME; else process.env.DSH_HOME = previous }
+  try { applyPlugin(ctx) } finally { if (previous === undefined) delete process.env.DSH_HOME; else process.env.DSH_HOME = previous }
   let disposed = false
   const dispose = async () => { if (!disposed) { disposed = true; for (const fn of disposers.reverse()) await fn?.() } }
   t.after(async () => { await dispose(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await rm(home, { recursive: true, force: true }) })

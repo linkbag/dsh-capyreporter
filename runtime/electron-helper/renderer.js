@@ -220,6 +220,19 @@
     const key = item.outcome === 'completed' ? 'subagentFinished' : item.outcome === 'error' ? 'subagentFailed' : 'subagentCancelled';
     return t(key) + (item.title ? ' · ' + item.title : '');
   }
+  const OUTCOMES = {
+    en: { completed: '✅ Turn complete', error: '⚠️ Run failed', aborted: '⏹ Run cancelled', blocked: '⏸ Run blocked', 'max-tokens': '⚠️ Output limit reached', interrupted: '⚠️ Run interrupted', idle: 'ℹ️ Run idle' },
+    zh: { completed: '✅ 本轮已完成', error: '⚠️ 运行失败', aborted: '⏹ 运行已取消', blocked: '⏸ 运行受阻', 'max-tokens': '⚠️ 已达到输出上限', interrupted: '⚠️ 运行中断', idle: 'ℹ️ 运行已空闲' },
+    es: { completed: '✅ Turno completado', error: '⚠️ La ejecución falló', aborted: '⏹ Ejecución cancelada', blocked: '⏸ Ejecución bloqueada', 'max-tokens': '⚠️ Límite de salida alcanzado', interrupted: '⚠️ Ejecución interrumpida', idle: 'ℹ️ Sin actividad' },
+    hi: { completed: '✅ कार्य पूरा हुआ', error: '⚠️ कार्य विफल हुआ', aborted: '⏹ कार्य रद्द किया गया', blocked: '⏸ कार्य अवरुद्ध है', 'max-tokens': '⚠️ आउटपुट सीमा पूरी हुई', interrupted: '⚠️ कार्य बाधित हुआ', idle: 'ℹ️ कोई कार्य नहीं चल रहा' },
+    ar: { completed: '✅ اكتملت الجولة', error: '⚠️ فشل التشغيل', aborted: '⏹ أُلغي التشغيل', blocked: '⏸ التشغيل متوقف بسبب عائق', 'max-tokens': '⚠️ تم بلوغ حد الإخراج', interrupted: '⚠️ انقطع التشغيل', idle: 'ℹ️ لا يوجد نشاط' },
+    pt: { completed: '✅ Turno concluído', error: '⚠️ A execução falhou', aborted: '⏹ Execução cancelada', blocked: '⏸ Execução bloqueada', 'max-tokens': '⚠️ Limite de saída atingido', interrupted: '⚠️ Execução interrompida', idle: 'ℹ️ Sem atividade' },
+    ru: { completed: '✅ Ход завершён', error: '⚠️ Ошибка выполнения', aborted: '⏹ Выполнение отменено', blocked: '⏸ Выполнение заблокировано', 'max-tokens': '⚠️ Достигнут лимит вывода', interrupted: '⚠️ Выполнение прервано', idle: 'ℹ️ Нет активности' },
+    ja: { completed: '✅ 応答完了', error: '⚠️ 実行に失敗しました', aborted: '⏹ 実行をキャンセルしました', blocked: '⏸ 実行がブロックされました', 'max-tokens': '⚠️ 出力上限に達しました', interrupted: '⚠️ 実行が中断されました', idle: 'ℹ️ 待機中' },
+    fr: { completed: '✅ Tour terminé', error: '⚠️ Échec de l’exécution', aborted: '⏹ Exécution annulée', blocked: '⏸ Exécution bloquée', 'max-tokens': '⚠️ Limite de sortie atteinte', interrupted: '⚠️ Exécution interrompue', idle: 'ℹ️ Aucune activité' },
+    de: { completed: '✅ Durchlauf abgeschlossen', error: '⚠️ Ausführung fehlgeschlagen', aborted: '⏹ Ausführung abgebrochen', blocked: '⏸ Ausführung blockiert', 'max-tokens': '⚠️ Ausgabelimit erreicht', interrupted: '⚠️ Ausführung unterbrochen', idle: 'ℹ️ Keine Aktivität' },
+  };
+  const completedLabel = item => OUTCOMES[locale]?.[item.outcome] || t('runEnded');
   const subagentCountLabel = n => n === 1 ? t('subagentOne') : t('subagents', { n });
   const subagentActiveLabel = n => n === 1 ? t('subagentActiveOne', { n }) : t('subagentActive', { n });
   function render() {
@@ -228,7 +241,7 @@
     sig = JSON.stringify([done?.at, roots, subagents, progress.at(-1)?.at, ...running.map(row => [row.id, row.title, row.preview, row.lines?.at(-1)])]);
     if (suppressed === sig || snoozed || (!done && !running.length)) { bubble.style.display = 'none'; refit(); return; }
     if (done && !roots) {
-      head.textContent = (done.label || t('runEnded')) + ' — ' + done.title + (running.length ? ' · ' + t('stillRunning', { n: running.length }) : '');
+      head.textContent = completedLabel(done) + ' — ' + done.title + (running.length ? ' · ' + t('stillRunning', { n: running.length }) : '');
     } else if (roots || running.length) {
       const liveRow = running.find(entry => !entry.subagent) || running[0];
       head.textContent = subagents
@@ -293,7 +306,7 @@
   el('muteButton').addEventListener('click', async () => {
     try {
       await bridge.request('/snooze', { minutes: muteMinutes });
-      snoozed = true; suppressed = sig; expanded = false; bubble.style.display = 'none'; refit();
+      snoozed = true; suppressed = null; expanded = false; bubble.style.display = 'none'; refit();
     } catch (error) { showError(error); }
   });
   // Free resize: every edge and corner adjusts the bubble, and the window

@@ -14,7 +14,7 @@ Electron main ── allowlisted IPC ── sandboxed file renderer
 
 [Host entry](../lib/index.js) exports the Cordis contract `name`, `inject: ['webServer']`, `apply(ctx)`. Each activation owns its settings, activity tracker, capability, routes, child and watchdog. Subscriptions use `{global:true}` so scoped session/agent events reach the reporter. Existing running agents are seeded on activation, not inferred from replayed session events.
 
-[Activity projection](../lib/activity.js) consumes real `event.type` + nested `event.data` payloads. `agent/status` owns liveness; metadata/text events cannot create running sessions. DSH `turn/end.data.reason.kind` determines the outcome; an idle status without that event is merely idle. The current turn resets at `turn/start`. Assistant step changes and failed same-step retry attempts reset preview text; authoritative assistant messages replace it, including empty/tool-only messages. Only text blocks are used, never reasoning, tool arguments, tool output or prompts.
+[Activity projection](../lib/activity.js) consumes real `event.type` + nested `event.data` payloads. `agent/status` owns liveness; metadata/text events cannot create running sessions. DSH `turn/end.data.reason.kind` determines the outcome; an idle status without that event is merely idle. The current turn resets at `turn/start`. Assistant step changes and failed same-step retry attempts reset preview text; authoritative assistant messages replace it, including empty/tool-only messages. Final previews use only assistant text, never reasoning, tool arguments, tool output or prompts. Explicit `showThinking` opt-in permits bounded live reasoning milestones; opting out discards those buffers immediately and re-enabling cannot recover them. Reasoning is never stored as a completed-result preview.
 
 Bounds: 600 characters of accumulated assistant text, ~120-character display tail, 16 internal step lines / 12 returned, 20 unread results, six-hour result expiry. Session identity and monotonically distinct completion timestamps permit exact acknowledgement without clearing another session. Workspace/session labels are refreshed through optional `workspaceRegistry`, `sessions`, and `sessionTitle` services; neither registry nor title service is required for the other to work.
 
@@ -26,7 +26,7 @@ All endpoints are below `/dsh-capyreporter`. Responses are no-store/nosniff and 
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET /state` | Toggles, scale, image revision, desktop readiness/status/error |
+| `GET /state` | Toggles, language, snooze, scale, image revision, desktop readiness/status/error; retryable pending navigation for browsers only |
 | `GET /activity` | Running identities/titles/previews/lines and per-session unread outcomes |
 | `GET /image` | Current PNG bytes |
 | `POST /image` | `{dataUrl: 'data:image/png;base64,…'}` |
@@ -37,8 +37,14 @@ All endpoints are below `/dsh-capyreporter`. Responses are no-store/nosniff and 
 | `POST /dismiss` | Acknowledge `{at:completionTimestamp}` |
 | `POST /desktop/show`, `/desktop/hide` | Request desktop mode / use page instead |
 | `POST /desktop/heartbeat` | Desktop capability only |
+| `POST /desktop/navigate` | Helper-only settings/session hand-off; stable `id`, expires after 30 seconds |
+| `POST /navigate/ack` | Browser-only `{id}`; clear only the matching pending command |
+| `POST /snooze` | `{minutes:number}`; positive values clamp 5–480, zero/negative ends mute |
+| `POST /snooze-minutes` | Persist default mute duration, clamped 5–480 |
+| `POST /thinking` | Persist `{enabled:boolean}` and update live reasoning visibility |
+| `POST /language` | Persist `auto` or one of the ten supported locale codes |
 
-DSH's raw plugin handlers run **outside the SPA auth gate**. The reporter therefore requires a loopback Host with the real host port and a loopback peer address. Browser requests additionally require a matching Origin or Referer and reject cross-site/opaque origins. The desktop uses a timing-safe activation-scoped bearer capability, held only by its main process.
+DSH's raw plugin handlers run **outside the SPA auth gate**. The reporter therefore requires a loopback Host with the real host port and a loopback peer address. Browser requests additionally require a matching Origin or Referer and reject cross-site/opaque origins. The desktop uses a timing-safe activation-owned bearer capability, held only by its main process. Each helper launch receives a fresh token; shutdown revokes the old token immediately, and mutations recheck it after asynchronous body reads so an old in-flight request cannot act on a replacement.
 
 **Limits:** same-origin checks are a browser/CSRF boundary, not authentication against a malicious local OS process capable of forging headers. This does not inherit or replace DSH login, support remote origins/reverse proxies, or protect against another trusted same-origin plugin/XSS. A proper reusable host-auth middleware/service is an upstream follow-up. HTTPS/forwarded origins are not inferred from untrusted proxy headers.
 
@@ -48,17 +54,21 @@ DSH's raw plugin handlers run **outside the SPA auth gate**. The reporter theref
 
 The page pet is hidden only when the host reports a recent desktop heartbeat. Browser-local position is persisted and clamped after resize/image load. Buttons support keyboard operation; drag/click are separated, ordinary scrolling is not intercepted, and reduced-motion styling is respected. Image URLs use a revision, so replacing custom art with more custom art cannot retain the old cache key.
 
+Pending desktop hand-offs are handled before unrelated activity fetching and mutation-generation checks. A successful callback is deduplicated by command ID in this tab and acknowledged; failed callbacks and lost acknowledgements retry until the host's 30-second expiry. This is not cross-tab exactly-once execution, and hidden-tab polling may still delay delivery.
+
+Mute gates only the bubble, not the pet/menu, and is separate from manual dismissal. Closing a live root chat never acknowledges a different unread result; the menu's explicit result acknowledgement remains available. Structured completion outcomes and notifications are localized independently of the host's English compatibility label.
+
 Notifications require explicit plugin opt-in plus granted browser permission; no automatic permission prompt. Results observed while focused are marked seen, not replayed on blur. Deduplication is per page; multiple DSH tabs can still notify independently.
 
 ## Electron
 
 [Main process](../runtime/electron-helper/main.js) loads its page by absolute path. `nodeIntegration:false`, `contextIsolation:true`, and `sandbox:true` are mandatory. Navigation, new windows, webviews and permission requests are denied. The page CSP forbids network access; the renderer cannot fetch the host or choose a target URL.
 
-[Policy](../runtime/electron-helper/policy.cjs) requires the owned webContents **and its main frame with the exact local page URL** for IPC. A bounded allowlist accepts only the reporter's read, scale, dismiss, hide and heartbeat operations. The main process makes authenticated, deadline-bound HTTP requests and supplies image data URLs. Open-site IPC has no URL parameter and opens only the validated configured loopback origin. Provider/API keys and Node injection variables are excluded from the child's OS/display environment.
+[Policy](../runtime/electron-helper/policy.cjs) requires the owned webContents **and its main frame with the exact local page URL** for IPC. A bounded allowlist accepts only the reporter's reads, scale, dismiss, snooze, hide, heartbeat and desktop settings/session hand-off operations. It deliberately excludes browser acknowledgements and language changes. The companion exposes no Go to chat action; that remains page-only. The main process makes authenticated, deadline-bound HTTP requests and supplies image data URLs. Open-site IPC has no URL parameter and opens only the validated configured loopback origin. Provider/API keys and Node injection variables are excluded from the child's OS/display environment.
 
-The window starts hidden. The renderer fetches state, decodes artwork, fetches activity, and only then heartbeats; the main process reveals it. Ten seconds without heartbeat restores the page pet; a 20-second watchdog kills an unresponsive helper. Three failed renderer polls close an orphan after host loss. Plugin disposal removes routes/tracking and awaits child shutdown (with a bounded force-kill fallback). No automatic crash-respawn loop is used; toggle desktop mode to retry.
+The window starts hidden. The renderer fetches state, decodes artwork, fetches activity, and only then heartbeats; the main process reveals it. Ten seconds without heartbeat restores the page pet; a 20-second watchdog kills an unresponsive helper. Three failed renderer polls close an orphan after host loss. Plugin disposal removes routes/tracking and awaits shared child shutdown (with a bounded force-kill fallback). Concurrent show requests wait for that shutdown, recheck desired state/disposal and only then launch a replacement; a cold helper has a 60-second readiness grace period, versus 20 seconds after its first heartbeat. No automatic crash-respawn loop is used; toggle desktop mode to retry.
 
-Native dragging follows `screen.getCursorScreenPoint()` and clamps to the nearest work area. Resize is display-aware, preserves the bottom anchor, and skips identical bounds to avoid fractional-DPI sinking. Artwork uses display-relative pixel caps, never `vh` of its self-resizing window. Empty window background is click-through; this is not per-pixel alpha hit testing. Desktop position is not persisted across launches.
+Native dragging follows `screen.getCursorScreenPoint()` and clamps to the nearest work area. Main owns an intended logical DIP rectangle: every move passes explicit dimensions to `setBounds()`, never feeding outward-rounded `getBounds()` sizes through `setPosition()`. The pure geometry module keeps requested dimensions separate from monitor caps. Resize is display-aware, preserves the bottom anchor, and skips identical intended bounds to avoid fractional-DPI growth/drift. Artwork uses display-relative pixel caps, never `vh` of its self-resizing window. Empty window background is click-through; this is not per-pixel alpha hit testing. Desktop position is not persisted across launches.
 
 ## Verification
 

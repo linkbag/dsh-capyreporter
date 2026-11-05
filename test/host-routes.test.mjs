@@ -240,6 +240,20 @@ test('language setting round-trips only supported locales and persists', async t
   await f.post('/language', { language: 'auto' })
   assert.equal((await f.get('/state')).language, 'auto')
 })
+test('thinking opt-out removes reasoning from every activity alias and never resurrects it', async t => {
+  const f = await fixture(t, { showThinking: true })
+  const agent = { id: 'reasoning-only' }, session = { id: agent.id }
+  const reasoning = text => f.emit('session/event', session, { type: 'assistant/chunk', data: { step: 1, chunk: { type: 'reasoning-delta', text } } })
+  f.emit('agent/status', { agent, status: 'running' }); reasoning('private-reasoning-completed')
+  f.emit('agent/status', { agent, status: 'idle' })
+  f.emit('agent/status', { agent: { id: 'live' }, status: 'running' })
+  f.emit('session/event', { id: 'live' }, { type: 'assistant/chunk', data: { step: 1, chunk: { type: 'reasoning-delta', text: 'private-reasoning-live' } } })
+  await f.post('/thinking', { enabled: false })
+  assert.ok(!JSON.stringify(await f.get('/activity')).includes('private-reasoning'))
+  await f.post('/thinking', { enabled: true })
+  assert.ok(!JSON.stringify(await f.get('/activity')).includes('private-reasoning'))
+})
+
 test('desktop navigation stays helper-only and never surfaces as a page command by itself', async t => {
   const f = await fixture(t)
   assert.equal((await f.get('/state')).navigate, null)

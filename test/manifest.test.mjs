@@ -1,6 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { access, readFile, readdir } from 'node:fs/promises'
+import { access, copyFile, mkdir, mkdtemp, readFile, readdir, rm, unlink, writeFile } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -43,4 +45,22 @@ test('npm test lists every node:test file so node 20 runs the same suite', async
   const onDisk = (await readdir(join(root, 'test'))).filter(name => name.endsWith('.test.mjs')).map(name => `test/${name}`).sort()
   assert.deepEqual([...entries].sort(), onDisk)
   assert.ok(entries.length >= 5)
+})
+
+test('prepack rejects editor lock artifacts and BOMs instead of publishing them', async () => {
+  const temp = await mkdtemp(join(tmpdir(), 'capy-prepack-'))
+  try {
+    await mkdir(join(temp, 'scripts'))
+    await mkdir(join(temp, 'docs'))
+    const guard = join(temp, 'scripts', 'check-bom.mjs')
+    await copyFile(join(root, 'scripts', 'check-bom.mjs'), guard)
+    const run = () => spawnSync(process.execPath, [guard], { stdio: 'ignore' }).status
+    assert.equal(run(), 0, 'clean package inputs pass')
+    const artifact = join(temp, 'docs', '.dsh-ops-update-test.lock')
+    await writeFile(artifact, '')
+    assert.equal(run(), 1, 'even an empty editor lock must stop packing')
+    await unlink(artifact)
+    await writeFile(join(temp, 'package.json'), '\uFEFF{}')
+    assert.equal(run(), 1, 'manifest BOM protection stays active')
+  } finally { await rm(temp, { recursive: true, force: true }) }
 })

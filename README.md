@@ -6,7 +6,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 
 ## What it reports
 
-- Live **workspace + session** labels and a bounded **assistant milestone** preview: the collapsed bubble follows the assistant's latest statement instead of tool chatter. Reasoning stays hidden unless you opt in to *Report thinking*; prompts, tool arguments and tool output are never displayed.
+- Live **workspace + session** labels and a bounded **assistant milestone** preview: the collapsed bubble follows the assistant's latest statement instead of tool chatter. Reasoning stays hidden unless you opt in to *Report thinking*; switching it off discards live reasoning buffers, and completed previews never retain reasoning. Prompts, tool arguments and tool output are never displayed.
 - Separate **completed, cancelled, failed, blocked, interrupted and output-limit** outcomes, using actual DSH `turn/end` events. Idle alone is not success.
 - **Running subagents are visible while they work.** The headline names them (`⏳ 1 running · 2 subagents — <chat>`) and, while the main chat has no fresh assistant text, the collapsed detail reads `🤖 2 subagents running`; the count drops as they finish and their progress milestones take over. Localized throughout.
 - **Only the main chat claims a finished turn.** Delegated subagent runs never raise the green *Turn complete* tick for the parent chat: while a main chat is running the headline keeps showing it, and delegated finishes (`✅ Subagent finished`, `⚠️ Subagent failed`, `⏹ Subagent cancelled`) appear as progress milestones in the details. A main-chat result may only take the headline once no main chat is running.
@@ -21,7 +21,7 @@ A local task reporter for DeepSeek Harness Web: a page pet, plus an optional tra
 dsh plugin --profile web add dsh-capyreporter
 ```
 
-0.6.26 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). The only peer dependencies are `@deepseek-ai/cordis` and `react`, which DSH supplies to the plugin; no DSH package version range is pinned. Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
+0.6.27 was re-verified against **DeepSeek Harness 0.2.1-alpha.1** (routes, slots, client bundle serving, and agent/session events). The only peer dependencies are `@deepseek-ai/cordis` and `react`, which DSH supplies to the plugin; no DSH package version range is pinned. Refresh after a client update; host-code updates need plugin reactivation or a DSH restart. A page refresh alone cannot replace a loaded host module.
 
 ### Optional desktop companion
 
@@ -48,7 +48,7 @@ The page pet is hidden **only after** the companion has decoded its image, fetch
 | Drag any bubble edge/corner, arrow keys on the corner handle, or Ctrl + wheel over the bubble | Resize the bubble (width 260–560, height 160–720 px), remembered per browser; buttons stay pinned to the bottom edge and the details area scrolls when the bubble is short |
 | Drag any edge/corner of the desktop bubble | Resize the always-on-top bubble; its window follows so the pet stays anchored above the bubble |
 | Double-click a resize handle, or **Reset bubble size** in the pet menu | Restore the default 360 px width and content-driven height |
-| Mute 30 min | Silence the bubble for the configured duration (default 30 min) |
+| Mute 30 min | Silence only the bubble for the configured duration (default 30 min); the pet/menu stay usable and unchanged activity returns when unmuted |
 | Restore bubble | Show current activity again and end a mute early |
 | Double-click desktop pet / Open DeepSeek Harness | Open the configured DSH origin |
 | Escape | Close controls/details |

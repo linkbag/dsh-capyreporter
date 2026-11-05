@@ -8,7 +8,38 @@
 
 **Follow-up (2026-10-30):** **0.6.20** fixes a reporting-correctness bug found in real use: a delegated subagent session finishing was treated as a finished *turn* for its parent chat, so the bubble showed the green *Turn complete* tick while the main chat was still running. Session classification now reads `session.header.origin === 'subagent'` (with `parentSession` for linkage): only root sessions enqueue completed results, delegated finishes become deterministic progress milestones (`✅ Subagent finished` / `⚠️ Subagent failed` / `⏹ Subagent cancelled`), a running root always outranks a stale completion in the headline, and `/activity` exposes `runningCount` (roots), `subagentCount`, per-row `subagent`/`parent` flags and a bounded `progress` list. Missing session metadata degrades to the old root behaviour.
 
-## Executive assessment
+## Follow-up audit — 2026-11-05 (local 0.6.27)
+
+Baseline for this pass: **0.6.26**, Git `8845ac7`. The trigger was a real always-on-top pet whose right-edge limit crept left during dragging. This pass covers the host, activity projection, page UI, Electron main/renderer/IPC, lifecycle, packaging and regression coverage. Earlier release evidence below is historical, not a claim about the current installed/live version.
+
+### Findings and fixes
+
+| Priority | Confirmed defect | Local 0.6.27 disposition |
+| --- | --- | --- |
+| P1 | Opted-in reasoning could become a completion preview and survive switching thinking off for six hours. | Completion previews use final assistant text only; opt-out erases live reasoning buffers and re-opt-in cannot revive them. Tracker and actual HTTP alias tests cover this. |
+| P2 | Windows fractional-DPI outward rounding was fed from `getBounds()` through `setPosition()`, enlarging the transparent window every drag tick. | Main owns intended logical bounds; explicit-size `setBounds()`, shared pure clamp/resize/drag geometry and no stationary moves. Requested size survives monitor caps. |
+| P2 | Mute hid the entire page pet and recorded a permanent manual-dismissal signature. | Mute affects only the bubble; accessible pet/menu, unchanged-activity unmute/expiry on both surfaces. |
+| P2 | Closing live chat B could acknowledge an older unread result from chat A. | Close acknowledges only when no root is running; the explicit menu result action remains separate. |
+| P2 | Concurrent hide/show/dispose could lose shutdown ownership and start a replacement before the old helper stopped. | Shared shutdown promise, await/recheck before launch, fresh capability per helper, immediate revocation and post-body token revalidation. Tests include delayed close, disposal and an old authorized upload finishing after replacement. |
+| P2 | Destructive `/state` reads lost desktop settings commands on activity failure, setting-generation races or failed callbacks. | Stable IDs retained until matching browser-only acknowledgement or 30-second expiry; callbacks precede activity fetching, failed callbacks retry, and lost acknowledgements do not re-execute in the same tab. |
+| P2 | Completion headlines/notifications preferred a hardcoded English host label. | Translate structured outcome codes in all ten locales on both surfaces; dictionary coverage and outcome parity tests. |
+| P3 | Watchdog reset heartbeat state before choosing its error, misreporting warm failures as cold starts. | Capture prior readiness before shutdown; separate cold/warm diagnosis tests. |
+| Test gap | Settings smoke reused an already-set sentinel and repeatedly injected commands, allowing a false pass. | Reset counters, use one stable command, fail the callback/ack/activity independently and assert recovery without duplicate execution. |
+| Packaging | Editor-operation lock debris was accidentally included by the broad docs directory allowlist. | Final installation checksum verification caught it; remove debris and make prepack reject these artifacts, with clean/lock/BOM fixture coverage. |
+
+### Native evidence and validation scope
+
+On the actual Windows **150%** display (`workArea` 1707 × 1019 DIP), a request for 284 × 178 returned an outward-enclosed 285 × 179 native rectangle. Before the fix, holding a synthetic cursor past the right edge grew that rectangle to **320 × 214** and moved x **1423 → 1388** in about 0.8 seconds. After the fix, all eight samples remained **x=1423, y=821, width=285, height=179**. The screen's reported width did not shrink. The isolated native probe never moved the user's physical cursor or used production preferences.
+
+Regression coverage now executes the actual main-process handlers with a rounding Electron adapter at **100/125/150/175/200%**, exercises repeated edge holds and negative/small work areas, and uses real Electron IPC/timers for a held-right-edge stability assertion. The real host lifecycle fixture exercises isolated spawn/readiness/hide/show/disposal. Browser/native smoke additionally covers unchanged-activity unmute, separate unread-result acknowledgement, translated outcomes and retryable settings delivery. A native readiness/viewport race in the smoke test was corrected by waiting for the requested DOM fit before comparing rectangles; readiness alone does not guarantee Chromium has received its resize event.
+
+Final pre-install validation: **85/85 unit tests**, `npm run verify` successful, and **4/4 Chromium/Electron smoke scenarios on two consecutive full runs** (about 29 seconds per run). These are local Windows results; this pass did not run or claim new GitHub CI results.
+
+No new runtime dependencies, assets from other pets, preference-default changes, production-server restart or remote publication are part of this pass. The prior comparative lessons remain applicable: explicit lifecycle/capability ownership, identity-aware result arbitration, pure independently tested projection/geometry, and measured native behavior rather than copying a related pet's bounds workaround.
+
+Remaining limits: physical mixed-DPI monitor transitions, taskbar/fullscreen behavior and Linux/macOS need manual native QA; simulated DPI cases are not five physical-display tests. The fixture is not the real DSH login/loader boot path. Hidden tabs can still delay settings hand-offs, and deduplication is per tab, not cross-tab exactly-once delivery. Same-origin loopback policy is still not authentication against malicious local processes; PNG checks remain structural, not a complete decoder. Review the [architecture](architecture.md) and [rollout guidance](troubleshooting.md) before replacing an active helper.
+
+## Executive assessment (original 2026-10-19 audit)
 
 The original 13 helper tests and bundle-shape check passed, but did not exercise real nested DSH events, HTTP policy, renderer lifecycle or a real browser. Live read-only evidence confirmed two material issues: unauthenticated reporter routes returned data while the DSH root required authentication, and actual activity lost tool names/text because fixtures used an invented flat event shape.
 

@@ -209,3 +209,25 @@ test('a fresh root turn clears earlier progress but keeps the completion queue',
   status('root', 'idle')
   assert.equal(tracker.snapshot().completions.length, 1)
 })
+
+test('thinking is never retained in completion previews and opt-out discards live buffers', () => {
+  const { tracker, status, send } = setup()
+  tracker.setShowThinking(true)
+  for (const outcome of ['completed', 'blocked', 'aborted']) {
+    status(outcome, 'running')
+    send(outcome, 'assistant/chunk', { step: 1, chunk: { type: 'reasoning-delta', text: 'private-reasoning-' + outcome } })
+    send(outcome, 'turn/end', { reason: { kind: outcome } })
+    status(outcome, 'idle')
+  }
+  status('live', 'running')
+  send('live', 'assistant/chunk', { step: 1, chunk: { type: 'reasoning-delta', text: 'private-reasoning-live' } })
+  assert.match(tracker.snapshot().running[0].preview, /private-reasoning/)
+  tracker.setShowThinking(false)
+  assert.ok(!JSON.stringify(tracker.snapshot()).includes('private-reasoning'))
+  tracker.setShowThinking(true)
+  assert.ok(!JSON.stringify(tracker.snapshot()).includes('private-reasoning'), 're-opt-in cannot revive discarded reasoning')
+  send('live', 'assistant/chunk', { step: 1, chunk: { type: 'text-delta', text: 'public answer' } })
+  status('live', 'idle')
+  assert.equal(tracker.snapshot().completed.preview, 'public answer')
+  assert.equal(tracker.snapshot().completions.filter(item => item.preview).length, 1)
+})

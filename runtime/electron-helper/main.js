@@ -3,6 +3,7 @@
 const { app, BrowserWindow, ipcMain, screen, shell } = require('electron');
 const path = require('node:path');
 const { origin, trustedSender, requestSpec } = require('./policy.cjs');
+const { clampBounds, resizeBounds, dragBounds } = require('./geometry.cjs');
 const PAGE = path.join(__dirname, 'index.html');
 const base = origin(process.env.DSH_CAPYREP_BASE_URL || 'http://127.0.0.1:3080');
 const token = process.env.DSH_CAPYREP_TOKEN;
@@ -10,6 +11,17 @@ delete process.env.DSH_CAPYREP_TOKEN;
 if (!token) throw new Error('Launch CapyReporter through its DSH host plugin');
 app.disableHardwareAcceleration();
 let win = null, dragTimer = null, dragState = null, topmostTimer = null;
+// Keep our intended DIP rectangle, not Windows' outward-rounded getBounds().
+// At 125/150/175% DPI, feeding that reading to setPosition() enlarges the window
+// on every drag tick and makes the right/bottom limits progressively retreat.
+let bounds = null, requestedSize = { w: 380, h: 350 };
+function moveTo(next) {
+  if (!win || win.isDestroyed()) return false;
+  if (bounds && ['x', 'y', 'width', 'height'].every(key => bounds[key] === next[key])) return false;
+  bounds = next;
+  win.setBounds(next, false);
+  return true;
+}
 const requests = new Set();
 function stopDrag() { clearInterval(dragTimer); dragTimer = null; dragState = null; }
 function topmost() {
@@ -55,44 +67,34 @@ on('focus', () => { if (win && !win.isDestroyed()) win.focus(); });
 on('open-site', () => { shell.openExternal(base).catch(error => console.error('[capyreporter] Open site failed:', error.message)); });
 on('resize', size => {
   const w = size?.w, h = size?.h;
-  if (!Number.isInteger(w) || !Number.isInteger(h) || w < 80 || h < 80 || w > 1600 || h > 1600) return;
-  const bounds = win.getBounds();
+  if (!Number.isInteger(w) || !Number.isInteger(h) || w < 80 || h < 80 || w > 16_384 || h > 16_384) return;
+  requestedSize = { w, h };
   const area = screen.getDisplayMatching(bounds).workArea;
-  const width = Math.min(w, area.width), height = Math.min(h, area.height);
-  if (bounds.width === width && bounds.height === height) return;
-  const x = Math.min(Math.max(area.x, Math.round(bounds.x + (bounds.width - width) / 2)), area.x + area.width - width);
-  const y = Math.min(Math.max(area.y, bounds.y + bounds.height - height), area.y + area.height - height);
-  win.setBounds({ x, y, width, height }); topmost();
+  if (moveTo(resizeBounds(bounds, requestedSize, area))) topmost();
 });
 // A monitor can disappear or change DPI while the pet is anchored to it. Re-anchor
 // instead of leaving the window off-screen while the host still reports desktop
 // mode ready (which suppresses the in-page pet).
 function reclamp() {
   if (!win || win.isDestroyed()) return;
-  const bounds = win.getBounds(), area = screen.getDisplayMatching(bounds).workArea;
-  const width = Math.min(bounds.width, area.width), height = Math.min(bounds.height, area.height);
-  const x = Math.min(Math.max(area.x, bounds.x), area.x + Math.max(0, area.width - width));
-  const y = Math.min(Math.max(area.y, bounds.y), area.y + Math.max(0, area.height - height));
-  if (x !== bounds.x || y !== bounds.y || width !== bounds.width || height !== bounds.height) {
-    win.setBounds({ x, y, width, height }); topmost();
-  }
+  stopDrag();
+  const area = screen.getDisplayMatching(bounds).workArea;
+  if (moveTo(resizeBounds(bounds, requestedSize, area))) topmost();
 }
 on('drag-start', () => {
   stopDrag();
-  const point = screen.getCursorScreenPoint(), bounds = win.getBounds();
-  dragState = { point, bounds };
+  dragState = { point: screen.getCursorScreenPoint(), bounds: { ...bounds } };
   dragTimer = setInterval(() => {
     if (!win || win.isDestroyed() || !dragState) return stopDrag();
-    const p = screen.getCursorScreenPoint(), area = screen.getDisplayNearestPoint(p).workArea, b = win.getBounds();
-    const x = Math.min(Math.max(area.x, dragState.bounds.x + p.x - dragState.point.x), area.x + Math.max(0, area.width - b.width));
-    const y = Math.min(Math.max(area.y, dragState.bounds.y + p.y - dragState.point.y), area.y + Math.max(0, area.height - b.height));
-    if (b.x !== x || b.y !== y) win.setPosition(x, y, false);
+    const point = screen.getCursorScreenPoint(), area = screen.getDisplayNearestPoint(point).workArea;
+    moveTo(dragBounds(dragState, point, requestedSize, area));
   }, 16);
 });
 on('drag-end', stopDrag);
 app.whenReady().then(() => {
   const area = screen.getPrimaryDisplay().workArea;
-  win = new BrowserWindow({ width: 380, height: 350, x: area.x + area.width - 400, y: area.y + area.height - 370,
+  bounds = clampBounds({ width: requestedSize.w, height: requestedSize.h, x: area.x + area.width - 400, y: area.y + area.height - 370 }, area);
+  win = new BrowserWindow({ ...bounds,
     show: false, useContentSize: true, transparent: true, frame: false, alwaysOnTop: true,
     skipTaskbar: true, resizable: false, hasShadow: false, focusable: true,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true } });

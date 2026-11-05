@@ -27,6 +27,14 @@ PNG only, at most 4 MiB and 4096 pixels per side. SVG, malformed base64 and trun
 
 The image revision changes on every replacement/reset, including custom-to-custom changes. New desktop sizing uses natural aspect ratio with a display-relative pixel cap, not `vh` of a moving/self-resizing window. Native equal-size resize requests are ignored to preserve the fractional-DPI sinking fix.
 
+## Desktop drifts left or cannot reach its previous right edge
+
+Use 0.6.27 or later, then relaunch the companion (**Use page pet** → **Enable always-on-top pet**). At fractional Windows scaling, older helpers repeatedly fed outward-rounded `getBounds()` dimensions back into `setPosition()`, growing the invisible window and progressively moving its right-edge limit left. The helper now keeps an intended logical rectangle and moves with explicit bounds, without changing its size on every drag tick. Refreshing the DSH page alone does not replace a running helper. Mixed-DPI monitor transitions still warrant manual testing on your own setup.
+
+## Bubble stays hidden after unmute
+
+Use **Restore bubble** from the pet menu or **Unmute** in settings. In 0.6.27, mute hides only the bubble, keeps the pet accessible, and no longer records a permanent dismissal signature. Unchanged activity returns after unmute/expiry. Closing via × remains a separate action: fresh activity brings a manually closed bubble back.
+
 ## Activity missing, wrong, or surprising
 
 - Only running agents create live rows; metadata and replay do not.
