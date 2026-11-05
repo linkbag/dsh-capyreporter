@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.26 (2026-11-04) — Go to chat stays on the page pet
+
+- **The always-on-top companion no longer carries *Go to chat*.** It was the only consumer of the helper-side browser hand-off, so the bubble button, the pet-menu entry, the `open-chat` IPC channel, the `?capyreporter=<session>` page hint and the host URL construction are all gone. *Go to chat* remains exactly where it works without cross-process tricks: the page pet's bubble and menu (through DSH's own workspace navigation).
+- The desktop bubble keeps Details and Mute; the desktop menu keeps Restore bubble, Open settings, Open DeepSeek Harness, Reset bubble size and Use page pet instead.
+- Regression coverage: the Electron suite asserts neither `#chatButton` nor `#menuChat` exists, while the Chromium suite keeps the page-pet *Go to chat* assertions.
+
 ## 0.6.25 (2026-11-04) — Go to chat really opens the chat
 
 - **The always-on-top pet's *Go to chat* now opens the DSH page at that session.** Besides the in-page hand-off (which a hidden tab only polls about once a minute), the companion asks the host to open the browser at `/?capyreporter=<session>`; the page consumes the hint through the workspace service, then strips it from the URL so a reload stays put. The helper builds that URL from its validated loopback origin — the renderer never chooses the origin — and the hint is only read from the page's own query string.

@@ -186,12 +186,6 @@ test('real Chromium: reporting, parallel results, keyboard/drag, artwork revisio
   })
   await page.waitForFunction(() => window.__CapyOpened === 'second', null, { timeout: 8000 })
   await page.unroute('**/dsh-capyreporter/state')
-  // The desktop companion can also open the page with a session hint, which is
-  // consumed once and stripped so a later reload does not jump again.
-  await page.goto(f.base + '/?capyreporter=third')
-  await page.waitForFunction(() => window.__CapyOpened === 'third', null, { timeout: 8000 })
-  assert.equal(new URL(page.url()).search, '', 'the session hint is removed after it is used')
-  await bubble.waitFor()
   // A settings hand-off from the desktop companion is consumed the same way.
   await page.route('**/dsh-capyreporter/state', async route => {
     const response = await route.fetch(), body = await response.json()
@@ -373,7 +367,7 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   t.after(() => new Promise(resolve => { server.closeAllConnections(); server.close(resolve) }))
   const base = 'http://127.0.0.1:' + server.address().port
-  const app = await electron.launch({ executablePath: electronPath, args: [join(root, 'runtime/electron-helper/main.js')], env: { ...helperEnv(process.env, base, token), DSH_CAPYREP_NO_BROWSER: '1' }, timeout: 30_000 })
+  const app = await electron.launch({ executablePath: electronPath, args: [join(root, 'runtime/electron-helper/main.js')], env: helperEnv(process.env, base, token), timeout: 30_000 })
   t.after(async () => { try { await app.close() } catch {} })
   const page = await app.firstWindow(), errors = []
   page.on('pageerror', error => errors.push(error.message))
@@ -396,11 +390,10 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   await page.locator('#img').focus(); await page.keyboard.press('Enter')
   await page.locator('#menu').waitFor({ state: 'visible' })
   await page.keyboard.press('Escape'); await page.locator('#menu').waitFor({ state: 'hidden' })
-  // Desktop parity: the companion follows the host language, resizes freely and
-  // can hand a session back to the browser page.
-  const chatButton = page.locator('#chatButton')
-  await chatButton.waitFor({ state: 'visible' })
-  assert.equal((await chatButton.textContent()).trim(), 'Zum Chat', 'desktop bubble follows the host language')
+  // Desktop parity: the companion follows the host language and resizes freely.
+  // Go to chat is a page-pet action only; the companion no longer carries it.
+  assert.equal(await page.locator('#chatButton').count(), 0, 'the desktop bubble has no Go to chat action')
+  assert.equal(await page.locator('#menuChat').count(), 0, 'the desktop menu has no Go to chat entry')
   assert.equal(await page.locator('#closeButton').getAttribute('aria-label'), 'Schließen', 'desktop close button follows the host language')
   assert.equal(await page.locator('#dismissButton').count(), 0, 'desktop bubble no longer carries a Dismiss action')
   await page.locator('#img').focus()
@@ -420,11 +413,6 @@ test('real Electron: sandboxed bridge, ready handshake, aspect fitting, same-siz
   await page.waitForFunction(width => document.getElementById('bubble').getBoundingClientRect().width > width + 8, beforeResize)
   const grownBounds = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds())
   assert.ok(grownBounds.width > bounds.width, 'resizing the desktop bubble grows the window')
-  await chatButton.click()
-  for (let i = 0; i < 40 && navigated.at(-1)?.sessionId !== 'desk'; i++) await page.waitForTimeout(50)
-  assert.deepEqual(navigated.at(-1), { sessionId: 'desk' }, 'Go to chat asks the page half to open the session')
-  const openedChat = await app.evaluate(() => globalThis.__capyOpenChat || '')
-  assert.match(openedChat, /\?capyreporter=desk$/, 'Go to chat also opens the browser at the session hint')
   // The menu is anchored to the window's bottom-right corner, so the window must
   // grow for it: a window sized only for the pet used to clip the first entries.
   await page.locator('#closeButton').click()

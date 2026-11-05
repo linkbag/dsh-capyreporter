@@ -3,7 +3,6 @@
   const bridge = window.petBridge;
   const el = id => document.getElementById(id);
   const img = el('img'), bubble = el('bubble'), head = el('bubbleHead'), detail = el('bubbleDetail'), log = el('bubbleLog'), menu = el('menu');
-  const chatButton = el('chatButton'), menuChat = el('menuChat');
   let scale = 1, imageRevision = null, expanded = false, suppressed = null, activity = null, sig = null;
   let timer = null, resizeTimer = null, stopped = false, failures = 0, pointer = null, dragging = false, interactive = false;
   let snoozed = false, muteMinutes = 30, rz = null, menuOpen = false;
@@ -12,7 +11,7 @@
   const bubbleSize = { w: 0, h: 0 };
   const STRINGS = {
     en: {
-      details: 'Details', collapse: 'Collapse', dismiss: 'Dismiss', dismissResult: 'Dismiss result', goToChat: 'Go to chat',
+      details: 'Details', collapse: 'Collapse', dismiss: 'Dismiss', dismissResult: 'Dismiss result',
       muteFor: 'Mute {n} min', runEnded: 'Run ended', stillRunning: '{n} still running', runningHead: '⏳ {n} running — {title}',
       runningHeadSubs: '⏳ {n} running · {subs} — {title}', subagentOne: '1 subagent', subagents: '{n} subagents', subagentActiveOne: '🤖 1 subagent running', subagentActive: '🤖 {n} subagents running',
       subagentFinished: '✅ Subagent finished',
@@ -25,7 +24,7 @@
       close: 'Close', openSettings: 'Open settings'
     },
     zh: {
-      details: '详情', collapse: '收起', dismiss: '忽略', dismissResult: '忽略结果', goToChat: '前往会话',
+      details: '详情', collapse: '收起', dismiss: '忽略', dismissResult: '忽略结果',
       muteFor: '静音 {n} 分钟', runEnded: '运行结束', stillRunning: '还有 {n} 个运行中', runningHead: '⏳ {n} 个运行中 — {title}',
       runningHeadSubs: '⏳ {n} 个运行中 · {subs} — {title}', subagentOne: '1 个子代理', subagents: '{n} 个子代理', subagentActiveOne: '🤖 1 个子代理运行中', subagentActive: '🤖 {n} 个子代理运行中',
       subagentFinished: '✅ 子代理已完成',
@@ -38,7 +37,7 @@
       close: '关闭', openSettings: '打开设置'
     },
     es: {
-      details: 'Detalles', collapse: 'Contraer', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir al chat',
+      details: 'Detalles', collapse: 'Contraer', dismiss: 'Descartar', dismissResult: 'Descartar resultado',
       muteFor: 'Silenciar {n} min', runEnded: 'Ejecución finalizada', stillRunning: '{n} aún en ejecución', runningHead: '⏳ {n} en ejecución — {title}',
       runningHeadSubs: '⏳ {n} en ejecución · {subs} — {title}', subagentOne: '1 subagente', subagents: '{n} subagentes', subagentActiveOne: '🤖 1 subagente en ejecución', subagentActive: '🤖 {n} subagentes en ejecución',
       subagentFinished: '✅ Subagente finalizado',
@@ -51,7 +50,7 @@
       close: 'Cerrar', openSettings: 'Abrir ajustes'
     },
     hi: {
-      details: 'विवरण', collapse: 'छोटा करें', dismiss: 'छिपाएँ', dismissResult: 'परिणाम छिपाएँ', goToChat: 'चैट खोलें',
+      details: 'विवरण', collapse: 'छोटा करें', dismiss: 'छिपाएँ', dismissResult: 'परिणाम छिपाएँ',
       muteFor: '{n} मिनट म्यूट करें', runEnded: 'रन पूरा हुआ', stillRunning: '{n} अभी चल रहे हैं', runningHead: '⏳ {n} चल रहे हैं — {title}',
       runningHeadSubs: '⏳ {n} चल रहे हैं · {subs} — {title}', subagentOne: '1 सबएजेंट', subagents: '{n} सबएजेंट', subagentActiveOne: '🤖 1 सबएजेंट चल रहा है', subagentActive: '🤖 {n} सबएजेंट चल रहे हैं',
       subagentFinished: '✅ सबएजेंट पूर्ण',
@@ -64,7 +63,7 @@
       close: 'बंद करें', openSettings: 'सेटिंग खोलें'
     },
     ar: {
-      details: 'التفاصيل', collapse: 'طيّ', dismiss: 'تجاهل', dismissResult: 'تجاهل النتيجة', goToChat: 'الانتقال إلى المحادثة',
+      details: 'التفاصيل', collapse: 'طيّ', dismiss: 'تجاهل', dismissResult: 'تجاهل النتيجة',
       muteFor: 'كتم {n} دقيقة', runEnded: 'انتهى التشغيل', stillRunning: '{n} قيد التشغيل', runningHead: '⏳ {n} قيد التشغيل — {title}',
       runningHeadSubs: '⏳ {n} قيد التشغيل · {subs} — {title}', subagentOne: 'وكيل فرعي واحد', subagents: 'وكلاء فرعيون: {n}', subagentActiveOne: '🤖 وكيل فرعي واحد قيد التشغيل', subagentActive: '🤖 وكلاء فرعيون قيد التشغيل: {n}',
       subagentFinished: '✅ اكتمل الوكيل الفرعي',
@@ -77,7 +76,7 @@
       close: 'إغلاق', openSettings: 'فتح الإعدادات'
     },
     pt: {
-      details: 'Detalhes', collapse: 'Recolher', dismiss: 'Descartar', dismissResult: 'Descartar resultado', goToChat: 'Ir para o chat',
+      details: 'Detalhes', collapse: 'Recolher', dismiss: 'Descartar', dismissResult: 'Descartar resultado',
       muteFor: 'Silenciar {n} min', runEnded: 'Execução concluída', stillRunning: '{n} ainda em execução', runningHead: '⏳ {n} em execução — {title}',
       runningHeadSubs: '⏳ {n} em execução · {subs} — {title}', subagentOne: '1 subagente', subagents: '{n} subagentes', subagentActiveOne: '🤖 1 subagente em execução', subagentActive: '🤖 {n} subagentes em execução',
       subagentFinished: '✅ Subagente concluído',
@@ -90,7 +89,7 @@
       close: 'Fechar', openSettings: 'Abrir configurações'
     },
     ru: {
-      details: 'Подробности', collapse: 'Свернуть', dismiss: 'Скрыть', dismissResult: 'Скрыть результат', goToChat: 'Перейти в чат',
+      details: 'Подробности', collapse: 'Свернуть', dismiss: 'Скрыть', dismissResult: 'Скрыть результат',
       muteFor: 'Без звука {n} мин', runEnded: 'Запуск завершён', stillRunning: 'ещё выполняется: {n}', runningHead: '⏳ выполняется: {n} — {title}',
       runningHeadSubs: '⏳ выполняется: {n} · {subs} — {title}', subagentOne: '1 субагент', subagents: 'субагентов: {n}', subagentActiveOne: '🤖 субагент выполняется: 1', subagentActive: '🤖 субагентов выполняется: {n}',
       subagentFinished: '✅ Субагент завершён',
@@ -103,7 +102,7 @@
       close: 'Закрыть', openSettings: 'Открыть настройки'
     },
     ja: {
-      details: '詳細', collapse: '折りたたむ', dismiss: '非表示', dismissResult: '結果を閉じる', goToChat: 'チャットを開く',
+      details: '詳細', collapse: '折りたたむ', dismiss: '非表示', dismissResult: '結果を閉じる',
       muteFor: '{n} 分ミュート', runEnded: '実行終了', stillRunning: '実行中 {n} 件', runningHead: '⏳ 実行中 {n} 件 — {title}',
       runningHeadSubs: '⏳ 実行中 {n} 件 · {subs} — {title}', subagentOne: 'サブエージェント 1 件', subagents: 'サブエージェント {n} 件', subagentActiveOne: '🤖 サブエージェント 1 件実行中', subagentActive: '🤖 サブエージェント {n} 件実行中',
       subagentFinished: '✅ サブエージェント完了',
@@ -116,7 +115,7 @@
       close: '閉じる', openSettings: '設定を開く'
     },
     fr: {
-      details: 'Détails', collapse: 'Réduire', dismiss: 'Masquer', dismissResult: 'Masquer le résultat', goToChat: 'Aller au chat',
+      details: 'Détails', collapse: 'Réduire', dismiss: 'Masquer', dismissResult: 'Masquer le résultat',
       muteFor: 'Silence {n} min', runEnded: 'Exécution terminée', stillRunning: '{n} encore en cours', runningHead: '⏳ {n} en cours — {title}',
       runningHeadSubs: '⏳ {n} en cours · {subs} — {title}', subagentOne: '1 sous-agent', subagents: '{n} sous-agents', subagentActiveOne: '🤖 1 sous-agent en cours', subagentActive: '🤖 {n} sous-agents en cours',
       subagentFinished: '✅ Sous-agent terminé',
@@ -129,7 +128,7 @@
       close: 'Fermer', openSettings: 'Ouvrir les paramètres'
     },
     de: {
-      details: 'Details', collapse: 'Einklappen', dismiss: 'Ausblenden', dismissResult: 'Ergebnis ausblenden', goToChat: 'Zum Chat',
+      details: 'Details', collapse: 'Einklappen', dismiss: 'Ausblenden', dismissResult: 'Ergebnis ausblenden',
       muteFor: '{n} Min. stumm', runEnded: 'Lauf beendet', stillRunning: '{n} laufen noch', runningHead: '⏳ {n} laufen — {title}',
       runningHeadSubs: '⏳ {n} laufen · {subs} — {title}', subagentOne: '1 Subagent', subagents: '{n} Subagenten', subagentActiveOne: '🤖 1 Subagent läuft', subagentActive: '🤖 {n} Subagenten laufen',
       subagentFinished: '✅ Subagent abgeschlossen',
@@ -160,12 +159,10 @@
     img.setAttribute('alt', t('controlsAria'));
     menu.setAttribute('aria-label', t('menuAria'));
     el('menuRestore').textContent = t('restoreBubble');
-    el('menuChat').textContent = t('goToChat');
     el('menuSite').textContent = t('openSite');
     el('menuSettings').textContent = t('openSettings');
     el('menuReset').textContent = t('resetSize');
     el('menuHide').textContent = t('usePagePet');
-    el('chatButton').textContent = t('goToChat');
     el('muteButton').textContent = t('muteFor', { n: muteMinutes });
     el('closeButton').setAttribute('aria-label', t('close'));
     el('closeButton').title = t('close');
@@ -218,9 +215,6 @@
     imageRevision = revision;
     refit();
   }
-  function sessionId() {
-    return (activity?.running || []).find(row => !row.subagent)?.id || activity?.completed?.id || activity?.running?.[0]?.id || null;
-  }
   // Delegated agents finish inside the parent turn; localize that milestone.
   function progressLine(item) {
     const key = item.outcome === 'completed' ? 'subagentFinished' : item.outcome === 'error' ? 'subagentFailed' : 'subagentCancelled';
@@ -253,7 +247,6 @@
     el('detailsButton').textContent = expanded ? t('collapse') : t('details');
     el('detailsButton').setAttribute('aria-expanded', String(expanded));
     el('muteButton').textContent = t('muteFor', { n: muteMinutes });
-    chatButton.style.display = sessionId() ? '' : 'none';
     bubble.style.display = 'block';
     refit();
   }
@@ -291,14 +284,6 @@
     }
   }
   el('detailsButton').addEventListener('click', () => { expanded = !expanded; render(); });
-  el('chatButton').addEventListener('click', () => {
-    const id = sessionId();
-    if (!id) return;
-    // The page half consumes /desktop/navigate; opening the browser with a
-    // session hint also works when the DSH tab is hidden (throttled timers).
-    bridge.openChat(id);
-    bridge.request('/desktop/navigate', { sessionId: id }).catch(showError);
-  });
   el('closeButton').addEventListener('click', () => {
     // Closing hides the current bubble; when a run has ended it also clears the
     // result on the host, and a running chat simply resurfaces on new activity.
@@ -413,13 +398,6 @@
     resizeTimer = setTimeout(async () => { try { await bridge.request('/scale', { scale }); } catch (error) { showError(error); } finally { resizeTimer = null; } }, 180);
   }, { passive: false });
   el('menuRestore').addEventListener('click', () => { suppressed = null; snoozed = false; expanded = false; closeMenu(); bridge.request('/snooze', { minutes: 0 }).catch(() => {}); render(); });
-  menuChat.addEventListener('click', () => {
-    closeMenu();
-    const id = sessionId();
-    if (!id) return;
-    bridge.openChat(id);
-    bridge.request('/desktop/navigate', { sessionId: id }).catch(showError);
-  });
   el('menuSite').addEventListener('click', () => { closeMenu(); bridge.openSite(); });
   el('menuSettings').addEventListener('click', () => { closeMenu(); bridge.request('/desktop/navigate', { settings: true }).catch(showError); });
   el('menuReset').addEventListener('click', () => { closeMenu(); resetSize(); });

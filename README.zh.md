@@ -22,7 +22,7 @@ DeepSeek Harness Web 的本地任务播报宠物：页面内悬浮水豚，以�
 dsh plugin --profile web add dsh-capyreporter
 ```
 
-0.6.25 已重新验证 **DeepSeek Harness 0.2.1-alpha.1**（路由、slots、客户端 bundle 分发与 agent/session 事件）。peerDependencies 只有 `@deepseek-ai/cordis` 与 `react`（由 DSH 提供给插件），不再锁定任何 DSH 包版本范围。客户端更新后刷新页面；**宿主代码更新需重新激活插件或重启 DSH，仅刷新不会替换已加载的宿主模块**。
+0.6.26 已重新验证 **DeepSeek Harness 0.2.1-alpha.1**（路由、slots、客户端 bundle 分发与 agent/session 事件）。peerDependencies 只有 `@deepseek-ai/cordis` 与 `react`（由 DSH 提供给插件），不再锁定任何 DSH 包版本范围。客户端更新后刷新页面；**宿主代码更新需重新激活插件或重启 DSH，仅刷新不会替换已加载的宿主模块**。
 
 宠物跨窗口置顶默认开启：未保存偏好设置的新安装会直接启动置顶宠物，以跨窗口浮层显示；选择「仅用网页宠物」即可关闭。
 
@@ -38,7 +38,7 @@ dsh plugin --profile web add dsh-capyreporter
 | Ctrl / Cmd + 滚轮 | 缩放，50–250%；普通滚轮不拦截 |
 | 单击、右击或 Enter/Space | 打开控制菜单 |
 | Details / Collapse | 展开或收起日志 |
-| 转到会话 | 在当前窗口打开标题所示的会话（运行中优先，否则为刚结束的）；宠物菜单同样可用 |
+| 转到会话 | 在当前窗口打开标题所示的会话（运行中优先，否则为刚结束的）；宠物菜单同样可用（仅网页宠物） |
 | 宠物菜单 → 打开设置 | 直接跳到 DSH 设置中的 CapyReporter 分区（桌面伴侣菜单同样可用） |
 | 宠物菜单 → 启用/重试宠物置顶 | 不离开网页宠物，直接启动宠物跨窗口置顶，或在其启动失败后重试 |
 | 气泡右上角 × | 关闭当前气泡（新活动会再次出现）；结束后同时确认该结果（宠物菜单仍有「忽略结果」） |

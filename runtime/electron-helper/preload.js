@@ -8,5 +8,4 @@ contextBridge.exposeInMainWorld('petBridge', Object.freeze({
   dragEnd: () => ipcRenderer.send('capyreporter:drag-end'),
   resize: size => ipcRenderer.send('capyreporter:resize', size),
   focusWindow: () => ipcRenderer.send('capyreporter:focus'),
-  openChat: sessionId => ipcRenderer.send('capyreporter:open-chat', sessionId),
 }));
