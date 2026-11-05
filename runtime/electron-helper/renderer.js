@@ -6,7 +6,7 @@
   const chatButton = el('chatButton'), menuChat = el('menuChat');
   let scale = 1, imageRevision = null, expanded = false, suppressed = null, activity = null, sig = null;
   let timer = null, resizeTimer = null, stopped = false, failures = 0, pointer = null, dragging = false, interactive = false;
-  let snoozed = false, muteMinutes = 30, rz = null;
+  let snoozed = false, muteMinutes = 30, rz = null, menuOpen = false;
   // User-chosen bubble size in DIPs. w = 0 means "track the pet scale"; h = 0
   // means "content driven" (up to the CSS max-height).
   const bubbleSize = { w: 0, h: 0 };
@@ -195,8 +195,11 @@
     bubble.style.maxHeight = bubbleSize.h ? 'none' : '';
     const shown = bubble.style.display !== 'none';
     const bubbleH = shown ? bubbleHeight() : 0;
+    // The menu grows upward from the window's bottom-right corner; a window
+    // sized only for the pet and the bubble would clip its first entries.
+    const menuHeight = menuOpen ? Math.min(window.screen.availHeight - 12, menu.scrollHeight + 12) : 0;
     const w = Math.min(window.screen.availWidth, Math.max(200, width + 24, shown ? bubbleSize.w + 24 : 0));
-    const h = Math.min(window.screen.availHeight, imageHeight + 8 + bubbleH + (shown ? 4 : 32));
+    const h = Math.min(window.screen.availHeight, Math.max(imageHeight + 8 + bubbleH + (shown ? 4 : 32), menuHeight));
     if (fit.w !== w || fit.h !== h) { fit.w = w; fit.h = h; bridge.resize({ w, h: Math.max(100, h) }); }
   }
   function showError(error) {
@@ -351,9 +354,22 @@
     handle.addEventListener('dblclick', resetSize);
     handle.addEventListener('keydown', keyResize);
   }
-  function toggleMenu() { const show = menu.style.display !== 'flex'; menu.style.display = show ? 'flex' : 'none'; img.setAttribute('aria-expanded', String(show)); if (show) el('menuRestore').focus(); }
+  function toggleMenu() {
+    menuOpen = menu.style.display !== 'flex';
+    menu.style.display = menuOpen ? 'flex' : 'none';
+    img.setAttribute('aria-expanded', String(menuOpen));
+    if (menuOpen) el('menuRestore').focus();
+    refit();
+  }
+  function closeMenu() {
+    if (!menuOpen) return;
+    menuOpen = false;
+    menu.style.display = 'none';
+    img.setAttribute('aria-expanded', 'false');
+    refit();
+  }
   img.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleMenu(); } });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape') { menu.style.display = 'none'; expanded = false; img.focus(); render(); } });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeMenu(); expanded = false; img.focus(); render(); } });
   img.addEventListener('contextmenu', event => { event.preventDefault(); toggleMenu(); });
   img.addEventListener('dblclick', () => bridge.openSite());
   img.addEventListener('pointerdown', event => {
@@ -384,18 +400,18 @@
     refit(); clearTimeout(resizeTimer);
     resizeTimer = setTimeout(async () => { try { await bridge.request('/scale', { scale }); } catch (error) { showError(error); } finally { resizeTimer = null; } }, 180);
   }, { passive: false });
-  el('menuRestore').addEventListener('click', () => { suppressed = null; snoozed = false; expanded = false; menu.style.display = 'none'; bridge.request('/snooze', { minutes: 0 }).catch(() => {}); render(); });
+  el('menuRestore').addEventListener('click', () => { suppressed = null; snoozed = false; expanded = false; closeMenu(); bridge.request('/snooze', { minutes: 0 }).catch(() => {}); render(); });
   menuChat.addEventListener('click', () => {
-    menu.style.display = 'none';
+    closeMenu();
     const id = sessionId();
     if (!id) return;
     bridge.request('/desktop/navigate', { sessionId: id }).catch(showError);
   });
-  el('menuSite').addEventListener('click', () => { menu.style.display = 'none'; bridge.openSite(); });
-  el('menuSettings').addEventListener('click', () => { menu.style.display = 'none'; bridge.request('/desktop/navigate', { settings: true }).catch(showError); });
-  el('menuReset').addEventListener('click', () => { menu.style.display = 'none'; resetSize(); });
-  el('menuHide').addEventListener('click', async () => { try { await bridge.request('/desktop/hide', {}); window.close(); } catch (error) { showError(error); } });
-  document.addEventListener('pointerdown', event => { if (!event.target.closest('#img, #menu')) menu.style.display = 'none'; });
+  el('menuSite').addEventListener('click', () => { closeMenu(); bridge.openSite(); });
+  el('menuSettings').addEventListener('click', () => { closeMenu(); bridge.request('/desktop/navigate', { settings: true }).catch(showError); });
+  el('menuReset').addEventListener('click', () => { closeMenu(); resetSize(); });
+  el('menuHide').addEventListener('click', async () => { closeMenu(); try { await bridge.request('/desktop/hide', {}); window.close(); } catch (error) { showError(error); } });
+  document.addEventListener('pointerdown', event => { if (!event.target.closest('#img, #menu')) closeMenu(); });
   window.addEventListener('beforeunload', () => { stopped = true; clearTimeout(timer); clearTimeout(resizeTimer); endDrag(); img.onload = img.onerror = null; });
   tick();
 })();

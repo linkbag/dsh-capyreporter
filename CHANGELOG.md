@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.23 (2026-11-04) — the desktop menu always fits its window
+
+- **The always-on-top pet menu no longer gets clipped.** The companion window was sized only for the pet and its bubble, while the menu grows upward from the window's bottom-right corner — with a small pet and the bubble closed, the first entries (including *Open settings*) sat above the window's top edge. Opening the menu now refits the window to the measured menu height (bottom edge anchored, still capped by the screen), closing it shrinks back, and the menu falls back to internal scrolling if the screen is too short. The page pet menu got the same viewport-height scroll guard.
+- Regression coverage: the Electron suite closes the bubble, opens the menu and asserts every entry is inside the window; unit tests stay at 66, smoke 4/4.
+
 ## 0.6.22 (2026-11-04) — switch to the always-on-top pet from either menu
 
 - **The page pet menu can hand reporting over to the always-on-top companion.** While the companion is switched off or has not become ready yet, the pet's right-click menu shows *Enable always-on-top pet* (or *Retry always-on-top pet* when a start failed), which starts it through the same atomic `/desktop/show` path the settings row uses. The item disappears once the companion is healthy, because the page pet is then hidden anyway.
